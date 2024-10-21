@@ -4,7 +4,7 @@ import SwiftUI
 extension UISegmentedControl {
     override open func didMoveToSuperview() {
         super.didMoveToSuperview()
-        setContentHuggingPriority(.defaultLow, for: .vertical) // << here !!
+        setContentHuggingPriority(.defaultLow, for: .vertical)
     }
 }
 
@@ -18,20 +18,29 @@ struct AddToDoView: View {
     }()
 
     // Constant for corner radius
-    private let cornerRadius: CGFloat = 10
+    private let cornerRadius: CGFloat = 5
     private let fieldHeight: CGFloat = 40
 
     @State private var showDatePicker = false
     @State private var selectedDate = Date()
 
     enum ToDoStatus: String, CaseIterable {
-        case todo = "ToDo"
+        case pending = "Pending"
         case inProgress = "InProgress"
-        case delayed = "Delayed"
+        case completed = "Completed"
     }
 
-    @State private var selectedStatus: ToDoStatus = .todo
+    @State private var selectedStatus: ToDoStatus = .pending
     @State private var tag = ""
+
+    let dateRange: ClosedRange<Date> = {
+        let calendar = Calendar.current
+        let startComponents = DateComponents(year: 2021, month: 1, day: 1)
+        let endComponents = DateComponents(year: 2021, month: 12, day: 31, hour: 23, minute: 59, second: 59)
+        let startDate = calendar.date(from: startComponents)!
+        let endDate = calendar.date(from: endComponents)!
+        return startDate ... endDate
+    }()
 
     var body: some View {
         VStack(spacing: 12) {
@@ -63,17 +72,21 @@ struct AddToDoView: View {
             .padding(.horizontal)
 
             if showDatePicker {
-                DatePicker("Select Deadline", selection: Binding<Date>(
-                    get: {
-                        dateFormatter.date(from: store.todo.deadline) ?? Date()
-                    },
-                    set: { newDate in
-                        let formattedDate = dateFormatter.string(from: newDate)
-                        store.send(.setDeadline(formattedDate))
-                        selectedDate = newDate
-                    }
-                ), displayedComponents: .date)
+                DatePicker("Select Deadline",
+                           selection: Binding<Date>(
+                               get: {
+                                   dateFormatter.date(from: store.todo.deadline) ?? Date()
+                               },
+                               set: { newDate in
+                                   let formattedDate = dateFormatter.string(from: newDate)
+                                   store.send(.setDeadline(formattedDate))
+                                   selectedDate = newDate
+                               }
+                           ),
+                           in: dateRange,
+                           displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.graphical)
+                    .frame(height: 250)
                     .padding(.horizontal)
             }
 
@@ -143,32 +156,6 @@ struct AddToDoView: View {
         .navigationTitle("Add To-Do")
         .navigationBarTitleDisplayMode(.large)
     }
-}
-
-#Preview {
-    AddToDoView(store: Store(initialState: AddToDoFeature.State(todo: ToDoItem(id: 1, title: "", deadline: "", createdAt: "", updatedAt: ""))) {
-        AddToDoFeature()
-    })
-}
-
-#Preview {
-    NavigationStack {
-        AddToDoView(
-            store: Store(
-                initialState: AddToDoFeature.State(
-                    todo: ToDoItem(id: 0, title: "", deadline: "", createdAt: "", updatedAt: "")
-                )
-            ) {
-                AddToDoFeature()
-            }
-        )
-    }
-}
-
-#Preview {
-    AddToDoView(store: Store(initialState: AddToDoFeature.State(todo: ToDoItem(id: 1, title: "", deadline: "", createdAt: "", updatedAt: ""))) {
-        AddToDoFeature()
-    })
 }
 
 #Preview {
