@@ -22,25 +22,27 @@ struct AddToDoView: View {
     @State private var selectedDate = Date()
 
     var body: some View {
-        VStack(spacing: 16) {
-            ToDoTitleField(title: $store.todo.title.sending(\.setTitle))
+        ScrollView {
+            VStack(spacing: 16) {
+                ToDoTitleField(title: $store.todo.title.sending(\.setTitle))
 
-            DeadlineField(store: store, showDatePicker: $showDatePicker)
+                DeadlineField(store: store, showDatePicker: $showDatePicker)
 
-            if showDatePicker {
-                DatePickerComponent(store: store, selectedDate: $selectedDate)
+                if showDatePicker {
+                    DatePickerComponent(store: store, selectedDate: $selectedDate)
+                }
+
+                StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
+
+                TagField(tag: $store.todo.tag.sending(\.setTag))
+
+                ActionButtons(store: store)
+
+                Spacer()
             }
-
-            StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
-
-            TagField(tag: $store.todo.tag.sending(\.setTag))
-
-            ActionButtons(store: store)
-
-            Spacer()
+            .padding(.horizontal, 24)
+            .padding(.vertical)
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical)
         .navigationTitle("Add To-Do")
         .navigationBarTitleDisplayMode(.large)
     }
@@ -51,7 +53,8 @@ struct ToDoTitleField: View {
 
     var body: some View {
         TextField("Enter To-Do Title", text: $title)
-            .frame(maxWidth: .infinity, maxHeight: 42)
+            .frame(maxWidth: .infinity)
+            .frame(height: 42)
             .padding(.horizontal)
             .background(Color(.systemGray5))
             .cornerRadius(5)
@@ -68,22 +71,36 @@ struct DeadlineField: View {
                 get: { store.todo.deadline },
                 set: { _ in }
             ))
-            .frame(maxWidth: .infinity, maxHeight: 42)
+            .frame(maxWidth: .infinity)
+            .frame(height: 42)
             .padding(.horizontal)
             .background(Color(.systemGray5))
             .cornerRadius(5)
             .disabled(true)
+            .modifier(AutoResizingTextFieldModifier())
 
-//            Button(action: {
-//                showDatePicker.toggle()
-//            }) {
-//                Image(systemName: "calendar")
-//                    .resizable()
-//                    .frame(width: 24, height: 24)
-//                    .padding(10)
-//            }
+            Button(action: {
+                showDatePicker.toggle()
+            }) {
+                Image(systemName: "calendar")
+                    .resizable()
+                    .frame(width: 24, height: 24)
+                    .padding(10)
+            }
         }
-        // .padding(.horizontal)
+    }
+}
+
+struct AutoResizingTextFieldModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        GeometryReader { geometry in
+            content
+                .font(.system(size: min(20, geometry.size.width / 10)))
+                .frame(width: geometry.size.width)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
     }
 }
 
@@ -118,9 +135,9 @@ struct DatePickerComponent: View {
                    ),
                    in: dateRange,
                    displayedComponents: [.date, .hourAndMinute])
+            .padding()
             .datePickerStyle(.graphical)
-            .frame(height: 250)
-            .padding(.horizontal)
+            .background(Color.pink.opacity(0.2), in: RoundedRectangle(cornerRadius: 20))
     }
 }
 
@@ -162,7 +179,8 @@ struct TagField: View {
                 .padding(.trailing, 8)
 
             TextField("Enter Tag", text: $tag)
-                .frame(maxWidth: .infinity, maxHeight: 42)
+                .frame(maxWidth: .infinity)
+                .frame(height: 42)
                 .padding(.horizontal)
                 .background(Color(.systemGray5))
                 .cornerRadius(5)
@@ -179,7 +197,8 @@ struct ActionButtons: View {
                 store.send(.saveButtonTapped)
             }) {
                 Text("Add")
-                    .frame(maxWidth: .infinity, maxHeight: 42)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 42)
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(5)
@@ -189,13 +208,13 @@ struct ActionButtons: View {
                 store.send(.cancelButtonTapped)
             }) {
                 Text("Cancel")
-                    .frame(maxWidth: .infinity, maxHeight: 42)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 42)
                     .background(Color.gray.opacity(0.5))
                     .foregroundColor(.white)
                     .cornerRadius(5)
             }
         }
-        // .padding(.horizontal)
         .padding(.top, 20)
     }
 }
