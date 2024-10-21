@@ -5,11 +5,16 @@ import SwiftUI
 struct ToDoItem: Identifiable, Codable, Equatable {
     var id: Int
     var title: String
-    var deadline: String
+    var deadline: String?
     var status: String
     var tags: [String]
     var createdAt: String
     var updatedAt: String
+}
+
+struct ToDoResponse: Codable {
+    let success: Bool
+    let data: [ToDoItem]
 }
 
 /*

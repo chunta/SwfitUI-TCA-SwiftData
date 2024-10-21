@@ -9,9 +9,9 @@ extension UISegmentedControl {
 }
 
 enum ToDoStatus: String, CaseIterable, Identifiable {
-    case pending = "Pending"
-    case inProgress = "In Progress"
-    case completed = "Completed"
+    case todo
+    case inProgress
+    case done
     var id: String { rawValue }
 }
 
@@ -71,7 +71,7 @@ struct DeadlineField: View {
     var body: some View {
         HStack {
             TextField("Deadline", text: Binding(
-                get: { store.todo.deadline },
+                get: { store.todo.deadline ?? "" },
                 set: { _ in }
             ))
             .frame(maxWidth: .infinity)
@@ -128,7 +128,7 @@ struct DatePickerComponent: View {
         DatePicker("Select Deadline",
                    selection: Binding<Date>(
                        get: {
-                           dateFormatter.date(from: store.todo.deadline) ?? Date()
+                           dateFormatter.date(from: store.todo.deadline ?? "") ?? Date()
                        },
                        set: { newDate in
                            let formattedDate = dateFormatter.string(from: newDate)
@@ -165,7 +165,7 @@ struct StatusPicker: View {
         }
         .onAppear {
             if selectedStatus.isEmpty {
-                selectedStatus = ToDoStatus.pending.rawValue
+                selectedStatus = ToDoStatus.todo.rawValue
             }
         }
     }

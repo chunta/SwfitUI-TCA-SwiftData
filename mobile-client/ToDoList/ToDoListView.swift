@@ -9,21 +9,29 @@ struct ToDoListView: View {
             ZStack {
                 VStack(spacing: 0) {
                     Spacer().frame(height: 6)
-                    List {
-                        ForEach(store.todos) { todo in
-                            TodoRow(todo: todo)
-                        }
-                        .onDelete { indexSet in
-                            for index in indexSet {
-                                let todo = store.todos[index]
-                                store.send(.deleteToDoItem(todo.id))
+
+                    if store.isLoading {
+                        ProgressView("Loading...")
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .padding()
+                    } else {
+                        List {
+                            ForEach(store.todos) { todo in
+                                TodoRow(todo: todo)
+                            }
+                            .onDelete { indexSet in
+                                for index in indexSet {
+                                    let todo = store.todos[index]
+                                    store.send(.deleteToDoItem(todo.id))
+                                }
                             }
                         }
+                        .listStyle(.plain)
+                        .listRowBackground(Color.clear)
+                        .listRowSpacing(0)
                     }
-                    .listStyle(.plain)
-                    .listRowBackground(Color.clear)
-                    .listRowSpacing(0)
                 }
+
                 VStack {
                     Spacer()
                     HStack {
@@ -46,6 +54,9 @@ struct ToDoListView: View {
             }
             .navigationTitle("To-Do List (\(store.todos.count))")
             .navigationBarTitleDisplayMode(.large)
+            .onAppear {
+                store.send(.fetchToDos)
+            }
         }
         .sheet(
             item: $store.scope(state: \.addToDo, action: \.addToDo)
@@ -68,8 +79,8 @@ struct TodoRow: View {
         return formatter
     }
 
-    func formattedDeadline(deadline: String) -> String {
-        if let date = dateFormatter.date(from: deadline) {
+    func formattedDeadline(deadline: String?) -> String {
+        if let deadline, let date = dateFormatter.date(from: deadline) {
             let displayFormatter = DateFormatter()
             displayFormatter.dateStyle = .medium
             displayFormatter.timeStyle = .medium
@@ -78,7 +89,7 @@ struct TodoRow: View {
             let timeZoneString = deadline.hasSuffix("Z") ? "UTC" : String(deadline.suffix(5))
             return "\(formattedDate) (\(timeZoneString))"
         }
-        return "Invalid date"
+        return ""
     }
 
     var body: some View {
@@ -96,7 +107,7 @@ struct TodoRow: View {
             .padding(.vertical, 4)
 
             HStack {
-                Text(formattedDeadline(deadline: todo.deadline))
+                Text(formattedDeadline(deadline: todo.deadline ?? ""))
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
@@ -117,11 +128,11 @@ struct TodoRow: View {
 
     private func statusColor(for status: String) -> Color {
         switch status {
-        case ToDoStatus.pending.rawValue:
+        case ToDoStatus.todo.rawValue:
             Color.purple
         case ToDoStatus.inProgress.rawValue:
             Color.blue
-        case ToDoStatus.completed.rawValue:
+        case ToDoStatus.done.rawValue:
             Color.green
         default:
             Color.gray
@@ -137,13 +148,13 @@ struct TodoRow: View {
                     ToDoItem(id: 0,
                              title: "Play Game",
                              deadline: "2024-12-14T12:34:56.789+0530",
-                             status: ToDoStatus.pending.rawValue, tags: ["Games", "Fun"],
+                             status: ToDoStatus.todo.rawValue, tags: ["Games", "Fun"],
                              createdAt: "",
                              updatedAt: ""),
                     ToDoItem(id: 1,
                              title: "Game",
                              deadline: "2024-10-05T22:32:00.000+0800",
-                             status: ToDoStatus.pending.rawValue, tags: ["Fun"],
+                             status: ToDoStatus.todo.rawValue, tags: ["Fun"],
                              createdAt: "",
                              updatedAt: ""),
                     ToDoItem(id: 2,
