@@ -15,17 +15,12 @@ enum ToDoStatus: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-struct Tag: Identifiable {
-    let id = UUID()
-    let name: String
-}
-
 struct AddToDoView: View {
     @Bindable var store: StoreOf<AddToDoFeature>
 
     @State private var showDatePicker = false
     @State private var selectedDate = Date()
-    @State private var tags: [Tag] = []
+    @State private var tags: [String] = []
 
     var body: some View {
         ScrollView {
@@ -40,9 +35,9 @@ struct AddToDoView: View {
 
                 StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
 
-                TagInputField(tags: $tags)
+                TagInputField(tags: $store.todo.tags.sending(\.setTags), store: store)
 
-                TagView(tags: $tags)
+                TagView(tags: $store.todo.tags.sending(\.setTags))
 
                 ActionButtons(store: store)
 
@@ -197,8 +192,12 @@ struct TagField: View {
 }
 
 struct TagInputField: View {
-    @Binding var tags: [Tag]
+    @Binding var tags: [String]
+    @Bindable var store: StoreOf<AddToDoFeature>
     @State private var input: String = ""
+
+    private let maxTags = 3
+    private let maxCharactersPerTag = 8
 
     var body: some View {
         HStack {
@@ -207,33 +206,35 @@ struct TagInputField: View {
                 .frame(width: 20, height: 20)
                 .padding(.trailing, 8)
 
-            TextField("Add a tag", text: $input, onCommit: {
+            TextField(tags.count < maxTags ? "Add a tag (max \(maxTags) tags, \(maxCharactersPerTag) chars each)" : "Tag limit reached", text: $input, onCommit: {
                 addTag()
+                DispatchQueue.main.async {
+                    input = ""
+                }
             })
+            .font(.system(size: 15))
             .frame(maxWidth: .infinity)
             .frame(height: 42)
             .padding(.horizontal)
             .background(Color(.systemGray5))
             .cornerRadius(5)
+            .disabled(tags.count >= maxTags)
         }
     }
 
     private func addTag() {
-        guard !input.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        let newTag = Tag(name: input.trimmingCharacters(in: .whitespaces))
-        tags.append(newTag)
-        DispatchQueue.main.async {
-            input = ""
-        }
+        let trimmedInput = input.trimmingCharacters(in: .whitespaces)
+        guard !trimmedInput.isEmpty, trimmedInput.count <= maxCharactersPerTag, tags.count < maxTags else { return }
+        tags.append(trimmedInput)
     }
 }
 
 struct TagView: View {
-    @Binding var tags: [Tag]
+    @Binding var tags: [String]
 
     var body: some View {
         HStack(spacing: 8) {
-            ForEach(tags) { tag in
+            ForEach(tags.filter { !$0.isEmpty }, id: \.self) { tag in
                 TagItem(tag: tag) {
                     removeTag(tag)
                 }
@@ -248,20 +249,20 @@ struct TagView: View {
         .clipped()
     }
 
-    private func removeTag(_ tag: Tag) {
-        if let index = tags.firstIndex(where: { $0.id == tag.id }) {
+    private func removeTag(_ tag: String) {
+        if let index = tags.firstIndex(of: tag) {
             tags.remove(at: index)
         }
     }
 }
 
 struct TagItem: View {
-    let tag: Tag
+    let tag: String
     let onRemove: () -> Void
 
     var body: some View {
         HStack {
-            Text(tag.name)
+            Text(tag)
                 .padding(8)
                 .background(Color.blue.opacity(0.7))
                 .foregroundColor(.white)
@@ -313,7 +314,7 @@ struct ActionButtons: View {
             store: Store(
                 initialState: AddToDoFeature.State(
                     todo:
-                    ToDoItem(id: 0, title: "", deadline: "", status: "", tag: "", createdAt: "", updatedAt: "")
+                    ToDoItem(id: 0, title: "", deadline: "", status: "", tags: [""], createdAt: "", updatedAt: "")
                 )
             ) {
                 AddToDoFeature()

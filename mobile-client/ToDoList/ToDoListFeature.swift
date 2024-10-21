@@ -7,7 +7,8 @@ struct ToDoListFeature {
     @ObservableState
     struct State: Equatable {
         @Presents var addToDo: AddToDoFeature.State?
-        var todos: [ToDoItem] = []
+        var todos: IdentifiedArrayOf<ToDoItem> = []
+        var currentId: Int = 0 // Add a counter for IDs
     }
 
     enum Action {
@@ -20,7 +21,8 @@ struct ToDoListFeature {
         Reduce { state, action in
             switch action {
             case .addButtonTapped:
-                state.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: "", status: "", tag: "", createdAt: "", updatedAt: ""))
+                state.addToDo
+                    = AddToDoFeature.State(todo: ToDoItem(id: state.currentId, title: "", deadline: "", status: "", tags: [], createdAt: "", updatedAt: ""))
                 return .none
 
             case .addToDo(.presented(.cancelButtonTapped)):
@@ -30,6 +32,7 @@ struct ToDoListFeature {
             case .addToDo(.presented(.saveButtonTapped)):
                 guard let todo = state.addToDo?.todo else { return .none }
                 state.todos.append(todo)
+                state.currentId += 1
                 state.addToDo = nil
                 return .none
 

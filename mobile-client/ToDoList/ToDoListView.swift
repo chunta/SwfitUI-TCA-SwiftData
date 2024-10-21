@@ -1,4 +1,3 @@
-
 import ComposableArchitecture
 import SwiftUI
 
@@ -8,21 +7,23 @@ struct ToDoListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                List {
-                    ForEach(store.todos) { todo in
-                        HStack {
-                            Text("\(todo.id)")
-                            Text(todo.title)
+                VStack(spacing: 0) {
+                    Spacer().frame(height: 6)
+                    List {
+                        ForEach(store.todos) { todo in
+                            TodoRow(todo: todo)
+                        }
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                let todo = store.todos[index]
+                                store.send(.deleteToDoItem(todo.id))
+                            }
                         }
                     }
-                    .onDelete { indexSet in
-                        for index in indexSet {
-                            let todo = store.todos[index]
-                            store.send(.deleteToDoItem(todo.id))
-                        }
-                    }
+                    .listStyle(.plain)
+                    .listRowBackground(Color.clear)
+                    .listRowSpacing(0)
                 }
-
                 VStack {
                     Spacer()
                     HStack {
@@ -34,15 +35,16 @@ struct ToDoListView: View {
                                 .resizable()
                                 .frame(width: 24, height: 24)
                                 .padding()
-                                .background(Color(.systemGray3))
+                                .background(Color(.systemGray2))
                                 .foregroundColor(.white)
                                 .clipShape(Circle())
                         }
-                        .padding()
+                        .padding(.trailing, 40)
+                        .padding(.bottom, 40)
                     }
                 }
             }
-            .navigationTitle("To-Do List")
+            .navigationTitle("To-Do List (\(store.todos.count))")
             .navigationBarTitleDisplayMode(.large)
         }
         .sheet(
@@ -56,13 +58,108 @@ struct ToDoListView: View {
     }
 }
 
+struct TodoRow: View {
+    let todo: ToDoItem
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        formatter.timeZone = TimeZone.current
+        return formatter
+    }
+
+    func formattedDeadline(deadline: String) -> String {
+        if let date = dateFormatter.date(from: deadline) {
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateStyle = .medium
+            displayFormatter.timeStyle = .medium
+            displayFormatter.timeZone = TimeZone.current
+            let formattedDate = displayFormatter.string(from: date)
+            let timeZoneString = deadline.hasSuffix("Z") ? "UTC" : String(deadline.suffix(5))
+            return "\(formattedDate) (\(timeZoneString))"
+        }
+        return "Invalid date"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(todo.title)
+                    .font(.headline)
+                Spacer()
+                Text(todo.status)
+                    .padding(6)
+                    .background(statusColor(for: todo.status))
+                    .foregroundColor(.white)
+                    .cornerRadius(5)
+            }
+            .padding(.vertical, 4)
+
+            HStack {
+                Text(formattedDeadline(deadline: todo.deadline))
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
+                Spacer()
+
+                ForEach(todo.tags.filter { !$0.isEmpty }, id: \.self) { tag in
+                    Text(tag)
+                        .padding(10)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(10)
+                }
+            }
+            .font(.subheadline)
+            .padding(.vertical, 4)
+        }
+        .padding(.horizontal, 5)
+    }
+
+    private func statusColor(for status: String) -> Color {
+        switch status {
+        case ToDoStatus.pending.rawValue:
+            Color.purple
+        case ToDoStatus.inProgress.rawValue:
+            Color.blue
+        case ToDoStatus.completed.rawValue:
+            Color.green
+        default:
+            Color.gray
+        }
+    }
+}
+
 #Preview {
     NavigationStack {
         ToDoListView(
             store: Store(
                 initialState: ToDoListFeature.State(todos: [
-                    ToDoItem(id: 0, title: "Play Game", deadline: "", status: "", tag: "", createdAt: "", updatedAt: ""),
-                    ToDoItem(id: 1, title: "Sleep", deadline: "", status: "", tag: "", createdAt: "", updatedAt: ""),
+                    ToDoItem(id: 0,
+                             title: "Play Game",
+                             deadline: "2024-12-14T12:34:56.789+0530",
+                             status: ToDoStatus.pending.rawValue, tags: ["Games", "Fun"],
+                             createdAt: "",
+                             updatedAt: ""),
+                    ToDoItem(id: 1,
+                             title: "Game",
+                             deadline: "2024-10-05T22:32:00.000+0800",
+                             status: ToDoStatus.pending.rawValue, tags: ["Fun"],
+                             createdAt: "",
+                             updatedAt: ""),
+                    ToDoItem(id: 2,
+                             title: "Sleep",
+                             deadline: "2024-10-20T09:12:57.455Z",
+                             status: ToDoStatus.inProgress.rawValue,
+                             tags: ["Health", "F2"],
+                             createdAt: "",
+                             updatedAt: ""),
+                    ToDoItem(id: 3,
+                             title: "Jump",
+                             deadline: "2023-12-10T05:48:21.996Z",
+                             status: ToDoStatus.inProgress.rawValue,
+                             tags: ["F2"],
+                             createdAt: "",
+                             updatedAt: ""),
                 ])) {
                     ToDoListFeature()
                 }

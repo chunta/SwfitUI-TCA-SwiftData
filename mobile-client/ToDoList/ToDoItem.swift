@@ -7,7 +7,7 @@ struct ToDoItem: Identifiable, Codable, Equatable {
     var title: String
     var deadline: String
     var status: String
-    var tag: String
+    var tags: [String]
     var createdAt: String
     var updatedAt: String
 }

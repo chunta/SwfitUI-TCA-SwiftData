@@ -15,7 +15,7 @@ struct AddToDoFeature {
         case setTitle(String)
         case setDeadline(String)
         case setStatus(String)
-        case setTag(String)
+        case setTags([String])
     }
 
     var body: some ReducerOf<Self> {
@@ -39,8 +39,8 @@ struct AddToDoFeature {
                 state.todo.status = status
                 return .none
 
-            case let .setTag(tag):
-                state.todo.tag = tag
+            case let .setTags(newTags):
+                state.todo.tags = newTags
                 return .none
             }
         }
