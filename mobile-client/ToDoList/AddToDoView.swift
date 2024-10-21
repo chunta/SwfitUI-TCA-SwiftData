@@ -15,11 +15,17 @@ enum ToDoStatus: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+struct Tag: Identifiable {
+    let id = UUID()
+    let name: String
+}
+
 struct AddToDoView: View {
     @Bindable var store: StoreOf<AddToDoFeature>
 
     @State private var showDatePicker = false
     @State private var selectedDate = Date()
+    @State private var tags: [Tag] = []
 
     var body: some View {
         ScrollView {
@@ -34,7 +40,9 @@ struct AddToDoView: View {
 
                 StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
 
-                TagField(tag: $store.todo.tag.sending(\.setTag))
+                TagInputField(tags: $tags)
+
+                TagView(tags: $tags)
 
                 ActionButtons(store: store)
 
@@ -184,6 +192,86 @@ struct TagField: View {
                 .padding(.horizontal)
                 .background(Color(.systemGray5))
                 .cornerRadius(5)
+        }
+    }
+}
+
+struct TagInputField: View {
+    @Binding var tags: [Tag]
+    @State private var input: String = ""
+
+    var body: some View {
+        HStack {
+            Image(systemName: "tag.fill")
+                .resizable()
+                .frame(width: 20, height: 20)
+                .padding(.trailing, 8)
+
+            TextField("Add a tag", text: $input, onCommit: {
+                addTag()
+            })
+            .frame(maxWidth: .infinity)
+            .frame(height: 42)
+            .padding(.horizontal)
+            .background(Color(.systemGray5))
+            .cornerRadius(5)
+        }
+    }
+
+    private func addTag() {
+        guard !input.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        let newTag = Tag(name: input.trimmingCharacters(in: .whitespaces))
+        tags.append(newTag)
+        DispatchQueue.main.async {
+            input = ""
+        }
+    }
+}
+
+struct TagView: View {
+    @Binding var tags: [Tag]
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(tags) { tag in
+                TagItem(tag: tag) {
+                    removeTag(tag)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 52)
+        .padding(.horizontal)
+        .padding(.vertical, 5)
+        .background(Color(.systemGray6))
+        .cornerRadius(5)
+        .clipped()
+    }
+
+    private func removeTag(_ tag: Tag) {
+        if let index = tags.firstIndex(where: { $0.id == tag.id }) {
+            tags.remove(at: index)
+        }
+    }
+}
+
+struct TagItem: View {
+    let tag: Tag
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack {
+            Text(tag.name)
+                .padding(8)
+                .background(Color.blue.opacity(0.7))
+                .foregroundColor(.white)
+                .cornerRadius(5)
+            Button(action: onRemove) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.white)
+                    .font(.system(size: 16))
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 }

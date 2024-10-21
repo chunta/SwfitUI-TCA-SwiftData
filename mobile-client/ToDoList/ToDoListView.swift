@@ -51,7 +51,7 @@ struct ToDoListView: View {
             NavigationStack {
                 AddToDoView(store: addContactStore)
             }
-            .presentationDetents([.height(540)])
+            .presentationDetents([.height(570)])
         }
     }
 }
