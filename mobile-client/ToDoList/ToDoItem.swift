@@ -6,6 +6,8 @@ struct ToDoItem: Identifiable, Codable, Equatable {
     var id: Int
     var title: String
     var deadline: String
+    var status: String
+    var tag: String
     var createdAt: String
     var updatedAt: String
 }

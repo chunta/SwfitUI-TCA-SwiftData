@@ -45,13 +45,13 @@ struct ToDoListView: View {
             .navigationTitle("To-Do List")
             .navigationBarTitleDisplayMode(.large)
         }
-        .fullScreenCover(
+        .sheet(
             item: $store.scope(state: \.addToDo, action: \.addToDo)
         ) { addContactStore in
             NavigationStack {
                 AddToDoView(store: addContactStore)
             }
-            .presentationDetents([.large])
+            .presentationDetents([.height(540)])
         }
     }
 }
@@ -61,8 +61,8 @@ struct ToDoListView: View {
         ToDoListView(
             store: Store(
                 initialState: ToDoListFeature.State(todos: [
-                    ToDoItem(id: 1, title: "Buy groceries", deadline: "", createdAt: "", updatedAt: ""),
-                    ToDoItem(id: 2, title: "Walk the dog", deadline: "", createdAt: "", updatedAt: ""),
+                    ToDoItem(id: 0, title: "Play Game", deadline: "", status: "", tag: "", createdAt: "", updatedAt: ""),
+                    ToDoItem(id: 1, title: "Sleep", deadline: "", status: "", tag: "", createdAt: "", updatedAt: ""),
                 ])) {
                     ToDoListFeature()
                 }

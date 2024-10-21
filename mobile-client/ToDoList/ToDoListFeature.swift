@@ -20,7 +20,7 @@ struct ToDoListFeature {
         Reduce { state, action in
             switch action {
             case .addButtonTapped:
-                state.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 1, title: "", deadline: "", createdAt: "", updatedAt: ""))
+                state.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: "", status: "", tag: "", createdAt: "", updatedAt: ""))
                 return .none
 
             case .addToDo(.presented(.cancelButtonTapped)):
