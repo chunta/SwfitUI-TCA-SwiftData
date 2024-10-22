@@ -45,14 +45,23 @@ struct ToDoListView: View {
     }
 
     private var todoList: some View {
-        List {
-            ForEach(store.todos) { todo in
-                todoRow(todo)
+        ScrollViewReader { scrollProxy in
+            List {
+                ForEach(store.todos) { todo in
+                    todoRow(todo)
+                }
+                .deleteDisabled(true)
             }
-            .deleteDisabled(true)
+            .listStyle(.plain)
+            .listRowBackground(Color.clear)
+            .onChange(of: store.todos) { _, _ in
+                if let firstTodo = store.todos.first {
+                    withAnimation {
+                        scrollProxy.scrollTo(firstTodo.id, anchor: .center)
+                    }
+                }
+            }
         }
-        .listStyle(.plain)
-        .listRowBackground(Color.clear)
     }
 
     private func todoRow(_ todo: ToDoItem) -> some View {
