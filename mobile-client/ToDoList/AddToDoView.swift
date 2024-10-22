@@ -48,6 +48,18 @@ struct AddToDoView: View {
         }
         .navigationTitle("Add To-Do")
         .navigationBarTitleDisplayMode(.large)
+        .alert(isPresented: Binding<Bool>(
+            get: { store.saveError != nil },
+            set: { _ in }
+        )) {
+            Alert(
+                title: Text("Error"),
+                message: Text(store.saveError ?? "An unknown error occurred"),
+                dismissButton: .default(Text("OK")) {
+                    store.send(.setError(nil))
+                }
+            )
+        }
     }
 }
 
@@ -114,8 +126,15 @@ struct DatePickerComponent: View {
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        formatter.timeZone = TimeZone.current
         return formatter
     }()
+
+    private func formatDate(_ date: Date) -> String {
+        var formattedDate = dateFormatter.string(from: date)
+        formattedDate = formattedDate.replacingOccurrences(of: "(\\+\\d{2})(\\d{2})", with: "$1:$2", options: .regularExpression)
+        return formattedDate
+    }
 
     let dateRange: ClosedRange<Date> = {
         let calendar = Calendar.current
@@ -128,10 +147,15 @@ struct DatePickerComponent: View {
         DatePicker("Select Deadline",
                    selection: Binding<Date>(
                        get: {
-                           dateFormatter.date(from: store.todo.deadline ?? "") ?? Date()
+                           if let deadline = store.todo.deadline,
+                              let date = dateFormatter.date(from: deadline)
+                           {
+                               return date
+                           }
+                           return Date()
                        },
                        set: { newDate in
-                           let formattedDate = dateFormatter.string(from: newDate)
+                           let formattedDate = formatDate(newDate)
                            store.send(.setDeadline(formattedDate))
                            selectedDate = newDate
                        }
@@ -282,26 +306,36 @@ struct ActionButtons: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Button(action: {
-                store.send(.saveButtonTapped)
-            }) {
-                Text("Add")
+            if store.isSaving {
+                ProgressView("Saving...")
                     .frame(maxWidth: .infinity)
                     .frame(height: 42)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
+                    .background(Color.blue.opacity(0.7))
                     .cornerRadius(5)
-            }
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .foregroundColor(.white)
+            } else {
+                Button(action: {
+                    store.send(.saveButtonTapped)
+                }) {
+                    Text("Add")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 42)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(5)
+                }
 
-            Button(action: {
-                store.send(.cancelButtonTapped)
-            }) {
-                Text("Cancel")
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 42)
-                    .background(Color.gray.opacity(0.5))
-                    .foregroundColor(.white)
-                    .cornerRadius(5)
+                Button(action: {
+                    store.send(.cancelButtonTapped)
+                }) {
+                    Text("Cancel")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 42)
+                        .background(Color.gray.opacity(0.5))
+                        .foregroundColor(.white)
+                        .cornerRadius(5)
+                }
             }
         }
         .padding(.top, 20)

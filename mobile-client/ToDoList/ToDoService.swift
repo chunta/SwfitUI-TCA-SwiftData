@@ -1,10 +1,10 @@
-
 import Combine
 import ComposableArchitecture
 import Foundation
 
 protocol ToDoServiceProtocol {
     func fetchToDos() async throws -> [ToDoItem]
+    func postToDo(_ todo: ToDoItem) async throws -> ToDoItem
 }
 
 enum ToDoServiceError: Error, LocalizedError {
@@ -29,42 +29,63 @@ final class ToDoService: ToDoServiceProtocol {
 
     private init() {}
 
+    private func handleError(_ error: Error) throws -> Never {
+        if let urlError = error as? URLError {
+            throw ToDoServiceError.networkError(urlError)
+        } else if let decodingError = error as? DecodingError {
+            throw ToDoServiceError.decodingError(decodingError)
+        } else {
+            throw error
+        }
+    }
+
     func fetchToDos() async throws -> [ToDoItem] {
         let url = URL(string: "http://localhost:5000/todos")!
-
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
-
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw ToDoServiceError.invalidResponse(0)
             }
-
             guard (200 ... 299).contains(httpResponse.statusCode) else {
                 throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
             }
-
-            // Convert incoming data to a string for logging
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("Incoming response: \(responseString)")
-            } else {
-                print("Failed to convert data to string")
-            }
-
-            // Decode the data into ToDoResponse
-            let decodedResponse = try JSONDecoder().decode(ToDoResponse.self, from: data)
-
-            // Return the array of ToDoItem from the decoded response
+            let decodedResponse = try JSONDecoder().decode(FetchToDoResponse.self, from: data)
             return decodedResponse.data
 
         } catch {
-            // Handle specific errors
-            if let urlError = error as? URLError {
-                throw ToDoServiceError.networkError(urlError)
-            } else if let decodingError = error as? DecodingError {
-                throw ToDoServiceError.decodingError(decodingError)
-            } else {
-                throw error // Re-throw any other unexpected error
-            }
+            try handleError(error)
         }
+    }
+
+    func postToDo(_ todo: ToDoItem) async throws -> ToDoItem {
+        let url = URL(string: "http://localhost:5000/todos")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        do {
+            let encodedData = try JSONEncoder().encode(todo)
+            let (data, response) = try await URLSession.shared.upload(for: request, from: encodedData)
+            guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
+                throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
+            }
+            let decodedResponse = try JSONDecoder().decode(AddToDoResponse.self, from: data)
+            guard decodedResponse.success else {
+                throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
+            }
+            return decodedResponse.data
+        } catch {
+            try handleError(error)
+        }
+    }
+}
+
+struct ToDoServiceKey: DependencyKey {
+    static var liveValue: ToDoServiceProtocol = ToDoService.shared
+}
+
+extension DependencyValues {
+    var toDoService: ToDoServiceProtocol {
+        get { self[ToDoServiceKey.self] }
+        set { self[ToDoServiceKey.self] = newValue }
     }
 }

@@ -1,4 +1,3 @@
-
 import ComposableArchitecture
 import Foundation
 
@@ -25,7 +24,6 @@ struct ToDoListFeature {
     struct State: Equatable {
         @Presents var addToDo: AddToDoFeature.State?
         var todos: IdentifiedArrayOf<ToDoItem> = []
-        var currentId: Int = 0
         var isLoading: Bool = false
         var error: String?
     }
@@ -44,18 +42,15 @@ struct ToDoListFeature {
         Reduce { state, action in
             switch action {
             case .addButtonTapped:
-                state.addToDo
-                    = AddToDoFeature.State(todo: ToDoItem(id: state.currentId, title: "", deadline: "", status: "", tags: [], createdAt: "", updatedAt: ""))
+                state.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
                 return .none
 
             case .addToDo(.presented(.cancelButtonTapped)):
                 state.addToDo = nil
                 return .none
 
-            case .addToDo(.presented(.saveButtonTapped)):
-                guard let todo = state.addToDo?.todo else { return .none }
-                state.todos.append(todo)
-                state.currentId += 1
+            case let .addToDo(.presented(.saveResponse(.success(todo)))):
+                state.todos.insert(todo, at: 0)
                 state.addToDo = nil
                 return .none
 
@@ -92,16 +87,5 @@ struct ToDoListFeature {
         .ifLet(\.$addToDo, action: \.addToDo) {
             AddToDoFeature()
         }
-    }
-}
-
-struct ToDoServiceKey: DependencyKey {
-    static var liveValue: ToDoServiceProtocol = ToDoService.shared
-}
-
-extension DependencyValues {
-    var toDoService: ToDoServiceProtocol {
-        get { self[ToDoServiceKey.self] }
-        set { self[ToDoServiceKey.self] = newValue }
     }
 }

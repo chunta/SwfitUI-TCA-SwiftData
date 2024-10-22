@@ -1,4 +1,3 @@
-
 import SwiftData
 import SwiftUI
 
@@ -10,11 +9,17 @@ struct ToDoItem: Identifiable, Codable, Equatable {
     var tags: [String]
     var createdAt: String
     var updatedAt: String
-}
 
-struct ToDoResponse: Codable {
-    let success: Bool
-    let data: [ToDoItem]
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encode(deadline, forKey: .deadline)
+        try container.encode(status, forKey: .status)
+        try container.encode(tags, forKey: .tags)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
+    }
 }
 
 /*
