@@ -23,42 +23,54 @@ struct AddToDoView: View {
     @State private var tags: [String] = []
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ToDoTitleField(title: $store.todo.title.sending(\.setTitle))
+        ZStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    ToDoTitleField(title: $store.todo.title.sending(\.setTitle))
 
-                DeadlineField(store: store, showDatePicker: $showDatePicker)
+                    DeadlineField(store: store, showDatePicker: $showDatePicker)
 
-                if showDatePicker {
-                    DatePickerComponent(store: store, selectedDate: $selectedDate)
+                    if showDatePicker {
+                        DatePickerComponent(store: store, selectedDate: $selectedDate)
+                    }
+
+                    StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
+
+                    TagInputField(tags: $store.todo.tags.sending(\.setTags), store: store)
+
+                    TagView(tags: $store.todo.tags.sending(\.setTags))
+
+                    ActionButtons(store: store)
+
+                    Spacer()
                 }
-
-                StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
-
-                TagInputField(tags: $store.todo.tags.sending(\.setTags), store: store)
-
-                TagView(tags: $store.todo.tags.sending(\.setTags))
-
-                ActionButtons(store: store)
-
-                Spacer()
+                .padding(.horizontal, 24)
+                .padding(.vertical)
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical)
-        }
-        .navigationTitle("Add To-Do")
-        .navigationBarTitleDisplayMode(.large)
-        .alert(isPresented: Binding<Bool>(
-            get: { store.saveError != nil },
-            set: { _ in }
-        )) {
-            Alert(
-                title: Text("Error"),
-                message: Text(store.saveError ?? "An unknown error occurred"),
-                dismissButton: .default(Text("OK")) {
-                    store.send(.setError(nil))
-                }
-            )
+            .navigationTitle("Add To-Do")
+            .navigationBarTitleDisplayMode(.large)
+            .alert(isPresented: Binding<Bool>(
+                get: { store.saveError != nil },
+                set: { _ in }
+            )) {
+                Alert(
+                    title: Text("Error"),
+                    message: Text(store.saveError ?? "An unknown error occurred"),
+                    dismissButton: .default(Text("OK")) {
+                        store.send(.setError(nil))
+                    }
+                )
+            }
+
+            if store.isSaving {
+                ProgressView("Saving...")
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .frame(width: 100, height: 100)
+                    .background(Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 10))
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .edgesIgnoringSafeArea(.all)
+            }
         }
     }
 }
@@ -306,36 +318,30 @@ struct ActionButtons: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            if store.isSaving {
-                ProgressView("Saving...")
+            Button(action: {
+                if !store.isSaving {
+                    store.send(.saveButtonTapped)
+                }
+            }) {
+                Text("Add")
                     .frame(maxWidth: .infinity)
                     .frame(height: 42)
-                    .background(Color.blue.opacity(0.7))
-                    .cornerRadius(5)
-                    .progressViewStyle(CircularProgressViewStyle())
+                    .background(Color.blue)
                     .foregroundColor(.white)
-            } else {
-                Button(action: {
-                    store.send(.saveButtonTapped)
-                }) {
-                    Text("Add")
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 42)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(5)
-                }
+                    .cornerRadius(5)
+            }
 
-                Button(action: {
+            Button(action: {
+                if !store.isSaving {
                     store.send(.cancelButtonTapped)
-                }) {
-                    Text("Cancel")
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 42)
-                        .background(Color.gray.opacity(0.5))
-                        .foregroundColor(.white)
-                        .cornerRadius(5)
                 }
+            }) {
+                Text("Cancel")
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 42)
+                    .background(Color.gray.opacity(0.5))
+                    .foregroundColor(.white)
+                    .cornerRadius(5)
             }
         }
         .padding(.top, 20)

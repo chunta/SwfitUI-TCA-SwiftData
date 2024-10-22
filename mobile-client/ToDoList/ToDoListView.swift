@@ -18,26 +18,7 @@ struct ToDoListView: View {
                         todoList
                     }
                 }
-
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            store.send(.addButtonTapped)
-                        }) {
-                            Image(systemName: "plus")
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .padding()
-                                .background(Color(.systemGray2))
-                                .foregroundColor(.white)
-                                .clipShape(Circle())
-                        }
-                        .padding(.trailing, 40)
-                        .padding(.bottom, 40)
-                    }
-                }
+                addButton
             }
             .navigationTitle("To-Do List (\(store.todos.count))")
             .navigationBarTitleDisplayMode(.large)
@@ -115,7 +96,9 @@ struct ToDoListView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    store.send(.addButtonTapped)
+                    if !store.isLoading {
+                        store.send(.addButtonTapped)
+                    }
                 }) {
                     Image(systemName: "plus")
                         .resizable()
