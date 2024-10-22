@@ -5,6 +5,7 @@ import Foundation
 protocol ToDoServiceProtocol {
     func fetchToDos() async throws -> [ToDoItem]
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem
+    func deleteToDo(id: Int) async throws
 }
 
 enum ToDoServiceError: Error, LocalizedError {
@@ -73,6 +74,20 @@ final class ToDoService: ToDoServiceProtocol {
                 throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
             }
             return decodedResponse.data
+        } catch {
+            try handleError(error)
+        }
+    }
+
+    func deleteToDo(id: Int) async throws {
+        let url = URL(string: "http://localhost:5000/todos/\(id)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
+                throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
+            }
         } catch {
             try handleError(error)
         }

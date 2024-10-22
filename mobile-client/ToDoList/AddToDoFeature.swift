@@ -10,7 +10,7 @@ struct AddToDoFeature {
         var saveError: String?
     }
 
-    enum Action {
+    enum Action: Equatable {
         case cancelButtonTapped
         case saveButtonTapped
         case saveResponse(Result<ToDoItem, ToDoError>)
@@ -33,7 +33,6 @@ struct AddToDoFeature {
                 state.isSaving = true
                 return .run { [state] send in
                     do {
-                        let jsonData = try JSONEncoder().encode(state.todo)
                         let newTodo = try await toDoService.postToDo(state.todo)
                         await send(.saveResponse(.success(newTodo)))
                     } catch {
