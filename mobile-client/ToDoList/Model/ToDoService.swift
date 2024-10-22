@@ -43,6 +43,7 @@ final class ToDoService: ToDoServiceProtocol {
     func fetchToDos() async throws -> [ToDoItem] {
         let url = URL(string: "http://localhost:5000/todos")!
         do {
+            try await Task.sleep(nanoseconds: 2_000_000_000)
             let (data, response) = try await URLSession.shared.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw ToDoServiceError.invalidResponse(0)
@@ -64,6 +65,7 @@ final class ToDoService: ToDoServiceProtocol {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
+            try await Task.sleep(nanoseconds: 2_000_000_000)
             let encodedData = try JSONEncoder().encode(todo)
             let (data, response) = try await URLSession.shared.upload(for: request, from: encodedData)
             guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
@@ -84,6 +86,7 @@ final class ToDoService: ToDoServiceProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         do {
+            try await Task.sleep(nanoseconds: 2_000_000_000)
             let (_, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
                 throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
