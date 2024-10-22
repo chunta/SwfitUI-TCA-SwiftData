@@ -129,7 +129,7 @@ struct ToDoListFeature {
                 state.isLoading = false
                 state.error = error.localizedDescription
                 state.alert = .init(
-                    title: { TextState("Failed to Fetch ToDo List") },
+                    title: { TextState("Failed to Fetch ToDo List!") },
                     actions: {
                         ButtonState(role: .destructive, action: .useLocalData) {
                             TextState("Use Local Data")
@@ -161,9 +161,6 @@ struct ToDoListFeature {
                 state.todos.removeAll { $0.id == id }
                 state.isDeleting = false
                 state.deletingTodoID = nil
-                state.alert = .init(title: {
-                    TextState("Deletion Successful!")
-                })
                 return .none
 
             case .deleteToDoResponse(.failure(_)):

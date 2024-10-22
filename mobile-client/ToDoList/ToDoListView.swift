@@ -45,7 +45,7 @@ struct ToDoListView: View {
                 Button(action: {
                     store.send(.toggleEditMode)
                 }) {
-                    Image(systemName: store.isEditing ? "checkmark" : "pencil")
+                    Image(systemName: store.isEditing ? "checkmark.circle" : "square.and.pencil")
                 }
             )
             .onAppear {
@@ -68,7 +68,7 @@ struct ToDoListView: View {
             ForEach(store.todos) { todo in
                 todoRow(todo)
             }
-            .onDelete(perform: deleteTodo)
+            .deleteDisabled(true)
         }
         .listStyle(.plain)
         .listRowBackground(Color.clear)
