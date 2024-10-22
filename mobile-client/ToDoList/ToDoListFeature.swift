@@ -60,6 +60,7 @@ struct ToDoListFeature {
         case alert(PresentationAction<Alert>)
         @CasePathable
         enum Alert {
+            case useLocalData
             case retry
             case leaveApp
         }
@@ -70,6 +71,10 @@ struct ToDoListFeature {
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
+            case .alert(.presented(.useLocalData)):
+                state.alert = nil
+                return .none
+
             case .alert(.presented(.retry)):
                 state.alert = nil
                 return .send(.fetchToDos)
@@ -126,10 +131,13 @@ struct ToDoListFeature {
                 state.alert = .init(
                     title: { TextState("Failed to Fetch ToDo List") },
                     actions: {
-                        ButtonState(role: .cancel, action: .retry) {
+                        ButtonState(role: .destructive, action: .useLocalData) {
+                            TextState("Use Local Data")
+                        }
+                        ButtonState(role: .destructive, action: .retry) {
                             TextState("Retry")
                         }
-                        ButtonState(role: .destructive, action: .leaveApp) {
+                        ButtonState(role: .cancel, action: .leaveApp) {
                             TextState("Leave App")
                         }
                     },

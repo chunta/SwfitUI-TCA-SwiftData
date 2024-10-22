@@ -88,9 +88,11 @@ struct ToDoListView: View {
                             .foregroundColor(.red)
                             .frame(width: 24, height: 24)
                     }
+                    .padding(.horizontal, 6)
                 }
             }
-            .padding()
+            .padding(.vertical, 3)
+            .padding(.horizontal, 0)
 
             if store.isDeleting, store.deletingTodoID == todo.id {
                 ProgressView()
