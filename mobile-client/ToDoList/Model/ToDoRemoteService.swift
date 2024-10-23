@@ -56,7 +56,10 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
                 throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
             }
             let decodedResponse = try JSONDecoder().decode(FetchToDoResponse.self, from: data)
-            let remoteTodos = decodedResponse.data
+            var remoteTodos = decodedResponse.data
+            
+            // Sort remote todos by updatedAt date in descending order
+            remoteTodos.sort(by: { $0.updatedAt > $1.updatedAt })
 
             // Sync local data with remote data:
             // 1. For each remote ToDo, update the matching local item if IDs match, replacing its properties.
