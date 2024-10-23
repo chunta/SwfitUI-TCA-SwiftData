@@ -192,4 +192,152 @@ struct ToDoRemoteServiceTests {
             }
         }
     }
+
+    @Test
+    func testRemoteLocalSyncUpdateRemove() async {
+        mockLocalService.todos = [
+            ToDoItemData(id: 1,
+                         title: "Local Title",
+                         deadline: "2024-11-01T09:00:00Z",
+                         status: "in-progress",
+                         tags: [Tag(name: "work")],
+                         createdAt: "2024-10-10T08:30:00Z",
+                         updatedAt: "2024-10-20T10:15:00Z"),
+            ToDoItemData(id: 2,
+                         title: "Buy a birthday gift for John",
+                         deadline: "2024-10-25T18:00:00Z",
+                         status: "pending",
+                         tags: [Tag(name: "work"), Tag(name: "birthday")],
+                         createdAt: "2024-10-05T12:00:00Z",
+                         updatedAt: "2024-10-19T14:45:00Z"),
+            ToDoItemData(id: 3,
+                         title: "Complete home renovation plan",
+                         deadline: "2024-12-10T17:00:00Z",
+                         status: "pending",
+                         tags: [],
+                         createdAt: "2024-09-25T14:00:00Z",
+                         updatedAt: "2024-10-10T09:30:00Z"),
+            ToDoItemData(id: 4,
+                         title: "Sleep",
+                         deadline: "2024-11-10T17:00:00Z",
+                         status: "todo",
+                         tags: [],
+                         createdAt: "2024-09-25T14:00:00Z",
+                         updatedAt: "2024-11-07T09:30:00Z"),
+        ]
+
+        let todos = [
+            ToDoItem(id: 1,
+                     title: "New Title",
+                     status: "pending",
+                     tags: ["errand"],
+                     createdAt: "2024-10-10T10:00:00Z",
+                     updatedAt: "2024-10-15T10:00:00Z"),
+            ToDoItem(id: 2,
+                     title: "Finish project report",
+                     status: "in-progress",
+                     tags: ["work"],
+                     createdAt: "2024-10-01T09:00:00Z",
+                     updatedAt: "2024-10-12T09:00:00Z"),
+        ]
+        let fetchResponse = FetchToDoResponse(success: true, data: todos)
+        let jsonData = try! JSONEncoder().encode(fetchResponse)
+        let url = URL(string: "http://localhost:5000/todos")!
+        let httpResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+
+        mockDataFetcher.result = (jsonData, httpResponse)
+
+        let remoteToDos = try! await service.fetchToDos()
+
+        #expect(remoteToDos.count == todos.count)
+
+        // Local number of todo item should be same as the latest fetch number
+        #expect(mockLocalService.todos.count == todos.count)
+
+        // Title of local item with id 1 should be updated
+        if let localTodoWithId1 = mockLocalService.todos.first(where: { $0.id == 1 }),
+           let remoteTodoWithId1 = remoteToDos.first(where: { $0.id == 1 })
+        {
+            #expect(localTodoWithId1.title == remoteTodoWithId1.title)
+            #expect(localTodoWithId1.tags.count == remoteTodoWithId1.tags.count)
+            #expect(localTodoWithId1.tags.first!.name == remoteTodoWithId1.tags.first!)
+        } else {
+            Issue.record("Unexpected Error")
+        }
+    }
+
+    @Test
+    func testRemoteLocalSyncUpdateAdd() async {
+        let originLocalToDos = [
+            ToDoItemData(id: 1,
+                         title: "Local Title",
+                         deadline: "2024-11-01T09:00:00Z",
+                         status: "in-progress",
+                         tags: [Tag(name: "work")],
+                         createdAt: "2024-10-10T08:30:00Z",
+                         updatedAt: "2024-10-20T10:15:00Z"),
+            ToDoItemData(id: 2,
+                         title: "Buy a birthday gift for John",
+                         deadline: "2024-10-25T18:00:00Z",
+                         status: "pending",
+                         tags: [Tag(name: "work"), Tag(name: "birthday")],
+                         createdAt: "2024-10-05T12:00:00Z",
+                         updatedAt: "2024-10-19T14:45:00Z"),
+        ]
+
+        mockLocalService.todos = originLocalToDos
+
+        let todos = [
+            ToDoItem(id: 1,
+                     title: "New Title",
+                     status: "pending",
+                     tags: ["errand"],
+                     createdAt: "2024-10-10T10:00:00Z",
+                     updatedAt: "2024-10-15T10:00:00Z"),
+            ToDoItem(id: 2,
+                     title: "Finish project report",
+                     status: "in-progress",
+                     tags: ["sleep"],
+                     createdAt: "2024-10-01T09:00:00Z",
+                     updatedAt: "2024-10-12T09:00:00Z"),
+            ToDoItem(id: 3,
+                     title: "Complete home renovation plan",
+                     deadline: "2024-12-10T17:00:00Z",
+                     status: "pending",
+                     tags: [],
+                     createdAt: "2024-09-25T14:00:00Z",
+                     updatedAt: "2024-10-10T09:30:00Z"),
+            ToDoItem(id: 4,
+                     title: "Sleep",
+                     deadline: "2024-11-10T17:00:00Z",
+                     status: "todo",
+                     tags: [],
+                     createdAt: "2024-09-25T14:00:00Z",
+                     updatedAt: "2024-11-07T09:30:00Z"),
+        ]
+        let fetchResponse = FetchToDoResponse(success: true, data: todos)
+        let jsonData = try! JSONEncoder().encode(fetchResponse)
+        let url = URL(string: "http://localhost:5000/todos")!
+        let httpResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+
+        mockDataFetcher.result = (jsonData, httpResponse)
+
+        let remoteToDos = try! await service.fetchToDos()
+
+        #expect(remoteToDos.count == todos.count)
+
+        // Latest number of local todo item should be greater than origin todos
+        #expect(mockLocalService.todos.count > originLocalToDos.count)
+
+        // Title of local item with id 1 should be updated
+        if let localTodoWithId2 = mockLocalService.todos.first(where: { $0.id == 2 }),
+           let remoteTodoWithId2 = remoteToDos.first(where: { $0.id == 2 })
+        {
+            #expect(localTodoWithId2.title == remoteTodoWithId2.title)
+            #expect(localTodoWithId2.tags.count == remoteTodoWithId2.tags.count)
+            #expect(localTodoWithId2.tags.first!.name == remoteTodoWithId2.tags.first!)
+        } else {
+            Issue.record("Unexpected Error")
+        }
+    }
 }
