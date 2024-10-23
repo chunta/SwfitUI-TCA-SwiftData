@@ -6,6 +6,7 @@ enum ToDoError: Error, LocalizedError, Equatable {
     case networkError(Error)
     case decodingError(Error)
     case invalidResponse(Int)
+    case localError
 
     var errorDescription: String? {
         switch self {
@@ -15,6 +16,8 @@ enum ToDoError: Error, LocalizedError, Equatable {
             "Decoding error: \(error.localizedDescription)"
         case let .invalidResponse(statusCode):
             "Invalid response from server: \(statusCode)"
+        case .localError:
+            "Unknow local error while fetching local storage data"
         }
     }
 
@@ -28,6 +31,8 @@ enum ToDoError: Error, LocalizedError, Equatable {
                 (error1.localizedDescription == error2.localizedDescription)
         case let (.invalidResponse(statusCode1), .invalidResponse(statusCode2)):
             statusCode1 == statusCode2
+        case (.localError, .localError):
+            true
         default:
             false
         }
@@ -72,8 +77,16 @@ struct ToDoListFeature {
         Reduce { state, action in
             switch action {
             case .alert(.presented(.useLocalData)):
-                state.alert = nil
-                return .none
+                state.isLoading = true
+                state.error = nil
+                return .run { send in
+                    do {
+                        let toDos = try await toDoService.fetchCachedTodos()
+                        await send(.fetchToDosResponse(.success(toDos)))
+                    } catch {
+                        await send(.fetchToDosResponse(.failure(.localError)))
+                    }
+                }
 
             case .alert(.presented(.retry)):
                 state.alert = nil
@@ -127,22 +140,36 @@ struct ToDoListFeature {
 
             case let .fetchToDosResponse(.failure(error)):
                 state.isLoading = false
-                state.error = error.localizedDescription
-                state.alert = .init(
-                    title: { TextState("Failed to Fetch ToDo List!") },
-                    actions: {
-                        ButtonState(role: .destructive, action: .useLocalData) {
-                            TextState("Use Local Data")
-                        }
-                        ButtonState(role: .destructive, action: .retry) {
-                            TextState("Retry")
-                        }
-                        ButtonState(role: .cancel, action: .leaveApp) {
-                            TextState("Leave App")
-                        }
-                    },
-                    message: { TextState("Unable to fetch the to-do list. Would you like to retry or leave the app?") }
-                )
+                if error == .localError {
+                    state.error = error.localizedDescription
+                    state.alert = .init(
+                        title: { TextState("Local Data Error") },
+                        actions: {
+                            ButtonState(role: .cancel, action: .leaveApp) {
+                                TextState("Leave App")
+                            }
+                        },
+                        message: { TextState("We couldn't access your local data at the moment. Please leave the app and try again later.") }
+                    )
+                } else {
+                    // Set alert for other types of errors
+                    state.error = error.localizedDescription
+                    state.alert = .init(
+                        title: { TextState("Failed to Fetch ToDo List!") },
+                        actions: {
+                            ButtonState(role: .destructive, action: .useLocalData) {
+                                TextState("Use Local Data")
+                            }
+                            ButtonState(role: .destructive, action: .retry) {
+                                TextState("Retry")
+                            }
+                            ButtonState(role: .cancel, action: .leaveApp) {
+                                TextState("Leave App")
+                            }
+                        },
+                        message: { TextState("Unable to fetch the to-do list. Would you like to retry or leave the app?") }
+                    )
+                }
                 return .none
 
             case let .deleteToDoItem(id):

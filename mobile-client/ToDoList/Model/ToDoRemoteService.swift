@@ -5,6 +5,7 @@ import SwiftData
 
 protocol ToDoRemoteServiceProtocol {
     func fetchToDos() async throws -> [ToDoItem]
+    func fetchCachedTodos() async throws -> [ToDoItem]
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem
     func deleteToDo(id: Int) async throws
 }
@@ -69,7 +70,6 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
                     try localService.update(todoId: remoteTodo.id, newToDo: remoteTodo)
                 } else {
                     let newLocalTodo = ToDoItemData(from: remoteTodo)
-                    print(newLocalTodo.tags)
                     try localService.save(todo: newLocalTodo)
                 }
             }
@@ -83,9 +83,12 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
             return remoteTodos
         } catch {
             print("Error fetching remote todos: \(error.localizedDescription)")
-            // try handleError(error)
-            return try localService.fetchTodos().map { $0.toDoItem() }
+            try handleError(error)
         }
+    }
+
+    func fetchCachedTodos() async throws -> [ToDoItem] {
+        return try localService.fetchTodos().map { $0.toDoItem() }
     }
 
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem {

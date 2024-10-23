@@ -16,8 +16,10 @@ class ToDoLocalService: ToDoLocalServiceProtocol {
     }
 
     func fetchTodos() throws -> [ToDoItemData] {
-        let fetchDescriptor = FetchDescriptor<ToDoItemData>()
-        return try context.fetch(fetchDescriptor)
+        let fetchDescriptor
+            = FetchDescriptor<ToDoItemData>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
+        let todos = try context.fetch(fetchDescriptor)
+        return todos
     }
 
     func save(todo: ToDoItemData) throws {
@@ -40,7 +42,6 @@ class ToDoLocalService: ToDoLocalServiceProtocol {
                 try context.save()
             }
         } catch {
-            print("Unable to fetch quiz items")
             throw error
         }
     }
