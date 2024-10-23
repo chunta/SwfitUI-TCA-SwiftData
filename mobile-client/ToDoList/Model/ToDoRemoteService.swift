@@ -57,7 +57,7 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
             }
             let decodedResponse = try JSONDecoder().decode(FetchToDoResponse.self, from: data)
             var remoteTodos = decodedResponse.data
-            
+
             // Sort remote todos by updatedAt date in descending order
             remoteTodos.sort(by: { $0.updatedAt > $1.updatedAt })
 
