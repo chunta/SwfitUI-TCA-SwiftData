@@ -10,7 +10,7 @@ protocol ToDoRemoteServiceProtocol {
     func deleteToDo(id: Int) async throws
 }
 
-enum ToDoServiceError: Error, LocalizedError {
+enum ToDoServiceError: Error, LocalizedError, Equatable {
     case networkError(Error)
     case decodingError(Error)
     case invalidResponse(Int)
@@ -18,11 +18,24 @@ enum ToDoServiceError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case let .networkError(error):
-            "Network error: \(error.localizedDescription)"
+            return "Network error: \(error.localizedDescription)"
         case let .decodingError(error):
-            "Decoding error: \(error.localizedDescription)"
+            return "Decoding error: \(error.localizedDescription)"
         case let .invalidResponse(statusCode):
-            "Invalid response from server: \(statusCode)"
+            return "Invalid response from server: \(statusCode)"
+        }
+    }
+
+    static func == (lhs: ToDoServiceError, rhs: ToDoServiceError) -> Bool {
+        switch (lhs, rhs) {
+        case let (.networkError(lhsError), .networkError(rhsError)):
+            return lhsError.localizedDescription == rhsError.localizedDescription
+        case let (.decodingError(lhsError), .decodingError(rhsError)):
+            return lhsError.localizedDescription == rhsError.localizedDescription
+        case let (.invalidResponse(lhsStatusCode), .invalidResponse(rhsStatusCode)):
+            return lhsStatusCode == rhsStatusCode
+        default:
+            return false
         }
     }
 }
@@ -30,9 +43,9 @@ enum ToDoServiceError: Error, LocalizedError {
 final class ToDoRemoteService: ToDoRemoteServiceProtocol {
     private let endPoint = "http://localhost:5000/todos"
     private let localService: ToDoLocalServiceProtocol
-    private let dataFetcher: DataFetcher
+    private let dataFetcher: DataFetcherProtocol
 
-    init(localService: ToDoLocalServiceProtocol, dataFetcher: DataFetcher) {
+    init(localService: ToDoLocalServiceProtocol, dataFetcher: DataFetcherProtocol) {
         self.localService = localService
         self.dataFetcher = dataFetcher
     }

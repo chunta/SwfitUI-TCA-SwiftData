@@ -3,8 +3,8 @@ import Testing
 @testable import ToDoList
 
 struct ToDoLocalServiceTests {
-    private var context: ModelContext!
-    private var service: ToDoLocalService!
+    private var context: ModelContext
+    private var service: ToDoLocalService
 
     init() {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
