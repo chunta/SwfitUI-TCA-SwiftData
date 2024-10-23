@@ -28,10 +28,13 @@ enum ToDoServiceError: Error, LocalizedError {
 }
 
 final class ToDoRemoteService: ToDoRemoteServiceProtocol {
+    private let endPoint = "http://localhost:5000/todos"
     private let localService: ToDoLocalServiceProtocol
+    private let dataFetcher: DataFetcher
 
-    init(localService: ToDoLocalServiceProtocol) {
+    init(localService: ToDoLocalServiceProtocol, dataFetcher: DataFetcher) {
         self.localService = localService
+        self.dataFetcher = dataFetcher
     }
 
     private func handleError(_ error: Error) throws -> Never {
@@ -45,10 +48,11 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
     }
 
     func fetchToDos() async throws -> [ToDoItem] {
-        let url = URL(string: "http://localhost:5000/todos")!
         do {
             try await Task.sleep(nanoseconds: 2_000_000_000)
-            let (data, response) = try await URLSession.shared.data(from: url)
+            let request = RequestBuilder.build(url: URL(string: endPoint)!, method: "GET", headers: nil, body: nil)
+            let (data, response)
+                = try await dataFetcher.dataRequest(from: request)
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw ToDoServiceError.invalidResponse(0)
             }
@@ -95,14 +99,11 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
     }
 
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem {
-        let url = URL(string: "http://localhost:5000/todos")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
             try await Task.sleep(nanoseconds: 2_000_000_000)
             let encodedData = try JSONEncoder().encode(todo)
-            let (data, response) = try await URLSession.shared.upload(for: request, from: encodedData)
+            let request = RequestBuilder.build(url: URL(string: endPoint)!, method: "POST", headers: ["Content-Type": "application/json"], body: encodedData)
+            let (data, response) = try await dataFetcher.dataRequest(from: request)
             guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
                 throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
             }
@@ -122,12 +123,11 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
     }
 
     func deleteToDo(id: Int) async throws {
-        let url = URL(string: "http://localhost:5000/todos/\(id)")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "DELETE"
         do {
             try await Task.sleep(nanoseconds: 2_000_000_000)
-            let (_, response) = try await URLSession.shared.data(for: request)
+            let deleteURL = "\(endPoint)/\(id)"
+            let request = RequestBuilder.build(url: URL(string: deleteURL)!, method: "DELETE", headers: nil, body: nil)
+            let (_, response) = try await dataFetcher.dataRequest(from: request)
             guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
                 throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
             }
@@ -145,7 +145,8 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
 
 struct ToDoServiceKey: DependencyKey {
     static var liveValue: ToDoRemoteServiceProtocol
-        = ToDoRemoteService(localService: ToDoLocalService(context: ModelContext(try! ModelContainer(for: ToDoItemData.self))))
+        = ToDoRemoteService(localService: ToDoLocalService(context: ModelContext(try! ModelContainer(for: ToDoItemData.self))),
+                            dataFetcher: URLSessionDataFetcher())
 }
 
 extension DependencyValues {
