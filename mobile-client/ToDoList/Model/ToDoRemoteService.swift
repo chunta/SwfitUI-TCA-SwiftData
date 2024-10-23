@@ -1,8 +1,9 @@
 import Combine
 import ComposableArchitecture
 import Foundation
+import SwiftData
 
-protocol ToDoServiceProtocol {
+protocol ToDoRemoteServiceProtocol {
     func fetchToDos() async throws -> [ToDoItem]
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem
     func deleteToDo(id: Int) async throws
@@ -25,10 +26,12 @@ enum ToDoServiceError: Error, LocalizedError {
     }
 }
 
-final class ToDoService: ToDoServiceProtocol {
-    static let shared = ToDoService()
+final class ToDoRemoteService: ToDoRemoteServiceProtocol {
+    private let localService: ToDoLocalServiceProtocol
 
-    private init() {}
+    init(localService: ToDoLocalServiceProtocol) {
+        self.localService = localService
+    }
 
     private func handleError(_ error: Error) throws -> Never {
         if let urlError = error as? URLError {
@@ -52,10 +55,36 @@ final class ToDoService: ToDoServiceProtocol {
                 throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
             }
             let decodedResponse = try JSONDecoder().decode(FetchToDoResponse.self, from: data)
-            return decodedResponse.data
+            let remoteTodos = decodedResponse.data
 
+            // Sync local data with remote data:
+            // 1. For each remote ToDo, update the matching local item if IDs match, replacing its properties.
+            // 2. If no match is found, insert the remote item as a new local record.
+            let localTodos = try localService.fetchTodos()
+            let remoteTodoIDs = Set(remoteTodos.map { $0.id })
+
+            // Update or insert local todos
+            for remoteTodo in remoteTodos {
+                if let _ = localTodos.first(where: { $0.id == remoteTodo.id }) {
+                    try localService.update(todoId: remoteTodo.id, newToDo: remoteTodo)
+                } else {
+                    let newLocalTodo = ToDoItemData(from: remoteTodo)
+                    print(newLocalTodo.tags)
+                    try localService.save(todo: newLocalTodo)
+                }
+            }
+
+            // Delete local todos that are not present in remote data
+            for localTodo in localTodos {
+                if !remoteTodoIDs.contains(localTodo.id) {
+                    try localService.delete(todo: localTodo)
+                }
+            }
+            return remoteTodos
         } catch {
-            try handleError(error)
+            print("Error fetching remote todos: \(error.localizedDescription)")
+            // try handleError(error)
+            return try localService.fetchTodos().map { $0.toDoItem() }
         }
     }
 
@@ -75,6 +104,11 @@ final class ToDoService: ToDoServiceProtocol {
             guard decodedResponse.success else {
                 throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
             }
+
+            // Save the new ToDo item in local storage
+            let newLocalTodo = ToDoItemData(from: decodedResponse.data)
+            try localService.save(todo: newLocalTodo)
+
             return decodedResponse.data
         } catch {
             try handleError(error)
@@ -91,6 +125,12 @@ final class ToDoService: ToDoServiceProtocol {
             guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
                 throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
             }
+
+            // Delete the local ToDo item
+            let localTodos = try localService.fetchTodos()
+            if let matchingLocalTodo = localTodos.first(where: { $0.id == id }) {
+                try localService.delete(todo: matchingLocalTodo)
+            }
         } catch {
             try handleError(error)
         }
@@ -98,11 +138,12 @@ final class ToDoService: ToDoServiceProtocol {
 }
 
 struct ToDoServiceKey: DependencyKey {
-    static var liveValue: ToDoServiceProtocol = ToDoService.shared
+    static var liveValue: ToDoRemoteServiceProtocol
+        = ToDoRemoteService(localService: ToDoLocalService(context: ModelContext(try! ModelContainer(for: ToDoItemData.self))))
 }
 
 extension DependencyValues {
-    var toDoService: ToDoServiceProtocol {
+    var toDoService: ToDoRemoteServiceProtocol {
         get { self[ToDoServiceKey.self] }
         set { self[ToDoServiceKey.self] = newValue }
     }
