@@ -23,4 +23,5 @@ jobs:
         run: swift package resolve  # Resolve any Swift Package Manager dependencies
 
       - name: Run tests
+        working-directory: mobile-client
         run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.0'
