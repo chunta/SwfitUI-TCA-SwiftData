@@ -23,11 +23,3 @@ jobs:
       - name: Run tests
         working-directory: ./mobile-client
         run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' -derivedDataPath DerivedData -enableCodeCoverage YES -skipMacroValidation
-
-      - name: Generate code coverage report
-        uses: michaelhenry/swifty-code-coverage@v1.0.0
-        with:
-          build-path: DerivedData # Correct DerivedData path
-          target: ToDoList.app # Use the correct target (usually the app or test target)
-          is-spm: false # 
-
