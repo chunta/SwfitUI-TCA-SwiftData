@@ -57,8 +57,62 @@ struct ToDoRemoteServiceTests {
         let remoteToDos = try! await service.fetchToDos()
 
         #expect(remoteToDos.count == todos.count)
-        #expect(remoteToDos[0].title == todos[0].title)
-        #expect(remoteToDos[4].title == todos[4].title)
+    }
+
+    @Test
+    func testFetchToDoSuccessFetchOrder() async {
+        let todos = [
+            ToDoItem(id: 1,
+                     title: "Buy groceries",
+                     deadline: "2023-10-20T09:12:57.455Z",
+                     status: "pending",
+                     tags: ["errand"],
+                     createdAt: "2024-10-20T09:12:57.455Z",
+                     updatedAt: "2024-10-20T09:12:57.455Z"),
+            ToDoItem(id: 2,
+                     title: "Finish project report",
+                     deadline: "2022-10-21T09:12:57.455Z",
+                     status: "in-progress",
+                     tags: ["work"],
+                     createdAt: "2024-10-20T09:12:57.455Z",
+                     updatedAt: "2024-10-20T09:12:57.455Z"),
+            ToDoItem(id: 3,
+                     title: "Hello World",
+                     deadline: nil,
+                     status: "pending",
+                     tags: ["health"],
+                     createdAt: "2024-10-20T09:12:57.455Z",
+                     updatedAt: "2024-10-20T09:12:57.455Z"),
+            ToDoItem(id: 4,
+                     title: "Plan weekend trip",
+                     deadline: nil,
+                     status: "completed",
+                     tags: ["travel"],
+                     createdAt: "2024-08-15T12:30:00.333Z",
+                     updatedAt: "2024-09-01T12:30:00.222Z"),
+            ToDoItem(id: 5,
+                     title: "Clean the garage",
+                     deadline: "2024-12-31T09:12:57.455Z",
+                     status: "pending",
+                     tags: ["home", "chores"],
+                     createdAt: "2024-07-22T13:45:00.331Z",
+                     updatedAt: "2024-08-30T13:45:00.222Z"),
+        ]
+
+        let fetchResponse = FetchToDoResponse(success: true, data: todos)
+        let jsonData = try! JSONEncoder().encode(fetchResponse)
+        let url = URL(string: "http://localhost:5000/todos")!
+        let httpResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+
+        mockDataFetcher.result = (jsonData, httpResponse)
+
+        let remoteToDos = try! await service.fetchToDos()
+
+        #expect(remoteToDos[0].id == 2)
+        #expect(remoteToDos[1].id == 1)
+        #expect(remoteToDos[2].id == 5)
+        #expect(remoteToDos[3].deadline == nil)
+        #expect(remoteToDos[4].deadline == nil)
     }
 
     @Test
@@ -119,7 +173,7 @@ struct ToDoRemoteServiceTests {
 
         mockDataFetcher.result = (jsonData, httpResponse)
         do {
-            try await service.postToDo(todo)
+            _ = try await service.postToDo(todo)
             Issue.record("Unexpected Error")
         } catch {
             if let serviceError = error as? ToDoServiceError {

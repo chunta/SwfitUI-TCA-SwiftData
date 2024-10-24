@@ -138,26 +138,6 @@ struct ToDoListView: View {
 struct TodoRow: View {
     let todo: ToDoItem
 
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-        formatter.timeZone = TimeZone.current
-        return formatter
-    }
-
-    func formattedDeadline(deadline: String?) -> String {
-        if let deadline, let date = dateFormatter.date(from: deadline) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .medium
-            displayFormatter.timeStyle = .medium
-            displayFormatter.timeZone = TimeZone.current
-            let formattedDate = displayFormatter.string(from: date)
-            let timeZoneString = deadline.hasSuffix("Z") ? "UTC" : String(deadline.suffix(5))
-            return "\(formattedDate) (\(timeZoneString))"
-        }
-        return ""
-    }
-
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -173,17 +153,20 @@ struct TodoRow: View {
             .padding(.vertical, 4)
 
             HStack {
-                Text(formattedDeadline(deadline: todo.deadline ?? ""))
-                    .font(.subheadline)
+                Image(systemName: "calendar")
+                    .foregroundColor(.gray)
+                    .frame(width: 24, height: 24)
+
+                Text(DateFormatterHelper.formattedDeadline(deadline: todo.deadline))
+                    .font(.footnote)
                     .foregroundColor(.gray)
 
                 Spacer()
 
                 ForEach(todo.tags.filter { !$0.isEmpty }, id: \.self) { tag in
-                    Text(tag)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(10)
+                    Text("#\(tag)")
+                        .foregroundColor(.gray)
+                        .padding(2)
                 }
             }
             .font(.subheadline)
