@@ -19,14 +19,9 @@ jobs:
       - name: Set up Xcode
         run: sudo xcode-select -switch /Applications/Xcode_16.0.app  # Specify the Xcode version if needed
 
-      - name: swift-package-dependencies-check
+      - name: Build
         working-directory: mobile-client
-        uses: MarcoEidinger/swift-package-dependencies-check@2.5.0
-  
-  
-      #- name: Set up dependencies
-      #  working-directory: mobile-client
-      #  run: swift package resolve  # Resolve any Swift Package Manager dependencies
+        run: swift build -v
 
       - name: Run tests
         working-directory: mobile-client
