@@ -77,8 +77,8 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
 
             // Sort remote todos by deadline (nil values will be placed at the end)
             remoteTodos.sort { first, second in
-                let firstDeadline = DateFormatterHelper.isoDateFormatter.date(from: first.deadline ?? "") ?? Date.distantFuture
-                let secondDeadline = DateFormatterHelper.isoDateFormatter.date(from: second.deadline ?? "") ?? Date.distantFuture
+                let firstDeadline = ToDoDateFormatter.isoDateFormatter.date(from: first.deadline ?? "") ?? Date.distantFuture
+                let secondDeadline = ToDoDateFormatter.isoDateFormatter.date(from: second.deadline ?? "") ?? Date.distantFuture
                 return firstDeadline < secondDeadline
             }
 

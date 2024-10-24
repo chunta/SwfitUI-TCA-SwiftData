@@ -1,6 +1,6 @@
 import Foundation
 
-enum DateFormatterHelper {
+enum ToDoDateFormatter {
     static let isoDateFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFractionalSeconds, .withInternetDateTime]
@@ -12,10 +12,11 @@ enum DateFormatterHelper {
             return ""
         }
 
+        // - dateStyle: .medium formats a date transforming "2024-07-31" to "Jul 31, 2024"
+        // - timeStyle: .medium formats the time to something like "12:34 PM"
         let displayFormatter = DateFormatter()
         displayFormatter.dateStyle = .medium
         displayFormatter.timeStyle = .medium
-        displayFormatter.timeZone = TimeZone.current
 
         let formattedDate = displayFormatter.string(from: date)
 

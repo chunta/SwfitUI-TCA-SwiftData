@@ -157,7 +157,7 @@ struct TodoRow: View {
                     .foregroundColor(.gray)
                     .frame(width: 24, height: 24)
 
-                Text(DateFormatterHelper.formattedDeadline(deadline: todo.deadline))
+                Text(ToDoDateFormatter.formattedDeadline(deadline: todo.deadline))
                     .font(.footnote)
                     .foregroundColor(.gray)
 
