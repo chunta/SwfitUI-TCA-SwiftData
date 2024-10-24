@@ -21,4 +21,10 @@ jobs:
 
       - name: Run tests
         working-directory: ./mobile-client
-        run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' -skipMacroValidation
+        run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' -enableCodeCoverage YES -skipMacroValidation
+
+      - name: Print coverage report
+        working-directory: ./mobile-client
+        run: |
+          xccov_output=$(xcodebuild -scheme ToDoList -showBuildSettings | grep -m 1 'OBJROOT' | sed 's/.*= //')/Build/Intermediates.noindex/CodeCoverage/Coverage.profdata
+          xcrun xccov view --report "$xccov_output"
