@@ -6,21 +6,21 @@ final class MockToDoRemoteService: ToDoRemoteServiceProtocol {
     var error: Error?
 
     func fetchToDos() async throws -> [ToDoItem] {
-        if let error = error {
+        if let error {
             throw error
         }
         return todos
     }
 
     func fetchCachedTodos() async throws -> [ToDoItem] {
-        if let error = error {
+        if let error {
             throw error
         }
         return todos
     }
 
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem {
-        if let error = error {
+        if let error {
             throw error
         }
         todos.append(todo)
@@ -28,7 +28,7 @@ final class MockToDoRemoteService: ToDoRemoteServiceProtocol {
     }
 
     func deleteToDo(id: Int) async throws {
-        if let error = error {
+        if let error {
             throw error
         }
         if let index = todos.firstIndex(where: { $0.id == id }) {

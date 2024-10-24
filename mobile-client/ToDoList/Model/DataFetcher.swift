@@ -6,6 +6,6 @@ protocol DataFetcherProtocol {
 
 final class URLSessionDataFetcher: DataFetcherProtocol {
     func dataRequest(from request: URLRequest) async throws -> (Data, URLResponse) {
-        return try await URLSession.shared.data(for: request)
+        try await URLSession.shared.data(for: request)
     }
 }

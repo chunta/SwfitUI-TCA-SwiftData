@@ -46,7 +46,7 @@ class ToDoItemData: Identifiable {
     }
 
     func toDoItem() -> ToDoItem {
-        let tags = self.tags.map { $0.name }
+        let tags = tags.map(\.name)
         return ToDoItem(
             id: id,
             title: title,

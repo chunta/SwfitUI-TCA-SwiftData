@@ -6,7 +6,7 @@ final class MockToDoLocalService: ToDoLocalServiceProtocol {
     var error: Error?
 
     func fetchTodos() throws -> [ToDoItemData] {
-        if let error = error {
+        if let error {
             throw error
         }
         return todos

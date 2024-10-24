@@ -11,7 +11,9 @@ struct ToDoListApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ToDoListView(store: ToDoListApp.todoListStore)
+            if !_XCTIsTesting {
+                ToDoListView(store: ToDoListApp.todoListStore)
+            }
         }
     }
 }

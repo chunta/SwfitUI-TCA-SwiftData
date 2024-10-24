@@ -18,24 +18,24 @@ enum ToDoServiceError: Error, LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case let .networkError(error):
-            return "Network error: \(error.localizedDescription)"
+            "Network error: \(error.localizedDescription)"
         case let .decodingError(error):
-            return "Decoding error: \(error.localizedDescription)"
+            "Decoding error: \(error.localizedDescription)"
         case let .invalidResponse(statusCode):
-            return "Invalid response from server: \(statusCode)"
+            "Invalid response from server: \(statusCode)"
         }
     }
 
     static func == (lhs: ToDoServiceError, rhs: ToDoServiceError) -> Bool {
         switch (lhs, rhs) {
         case let (.networkError(lhsError), .networkError(rhsError)):
-            return lhsError.localizedDescription == rhsError.localizedDescription
+            lhsError.localizedDescription == rhsError.localizedDescription
         case let (.decodingError(lhsError), .decodingError(rhsError)):
-            return lhsError.localizedDescription == rhsError.localizedDescription
+            lhsError.localizedDescription == rhsError.localizedDescription
         case let (.invalidResponse(lhsStatusCode), .invalidResponse(rhsStatusCode)):
-            return lhsStatusCode == rhsStatusCode
+            lhsStatusCode == rhsStatusCode
         default:
-            return false
+            false
         }
     }
 }
@@ -82,7 +82,7 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
             // 1. For each remote ToDo, update the matching local item if IDs match, replacing its properties.
             // 2. If no match is found, insert the remote item as a new local record.
             let localTodos = try localService.fetchTodos()
-            let remoteTodoIDs = Set(remoteTodos.map { $0.id })
+            let remoteTodoIDs = Set(remoteTodos.map(\.id))
 
             // Update or insert local todos
             for remoteTodo in remoteTodos {
@@ -108,7 +108,7 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
     }
 
     func fetchCachedTodos() async throws -> [ToDoItem] {
-        return try localService.fetchTodos().map { $0.toDoItem() }
+        try localService.fetchTodos().map { $0.toDoItem() }
     }
 
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem {
