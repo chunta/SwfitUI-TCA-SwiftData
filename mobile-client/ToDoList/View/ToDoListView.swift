@@ -121,7 +121,7 @@ struct ToDoListView: View {
                     }
                 }) {
                     Image(systemName: "plus")
-                        .resizable()
+                        .font(Font.title.weight(.light))
                         .frame(width: 24, height: 24)
                         .padding()
                         .background(Color(.white))
