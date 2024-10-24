@@ -65,10 +65,10 @@ struct ToDoListView: View {
             }
             .listStyle(.plain)
             .listRowBackground(Color.clear)
-            .onChange(of: store.todos) { _, _ in
-                if let firstTodo = store.todos.first {
+            .onChange(of: store.insertionIndex) { _, newIndex in
+                if newIndex >= 0, newIndex < store.todos.count {
                     withAnimation {
-                        scrollProxy.scrollTo(firstTodo.id, anchor: .center)
+                        scrollProxy.scrollTo(store.todos[newIndex].id, anchor: .center)
                     }
                 }
             }

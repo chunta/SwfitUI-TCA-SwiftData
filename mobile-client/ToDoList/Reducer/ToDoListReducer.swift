@@ -51,7 +51,7 @@ struct ToDoListReducer {
         var deletingTodoID: Int?
         var isEditing: Bool = false
         var editingTodoId: Int?
-        var insertIndex: Int?
+        var insertionIndex: Int = 0
         @Presents var alert: AlertState<Action.Alert>?
     }
 
@@ -122,7 +122,7 @@ struct ToDoListReducer {
                     return newDeadline < existingDeadline
                 } ?? state.todos.endIndex
 
-                state.insertIndex = index
+                state.insertionIndex = index
 
                 // Insert the new todo at the calculated position
                 state.todos.insert(todo, at: index)

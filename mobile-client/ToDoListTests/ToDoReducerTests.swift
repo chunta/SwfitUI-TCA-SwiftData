@@ -85,8 +85,8 @@ struct ToDoReducerTests {
         // We not only test addition value, but only insertion index
         let todo1 = ToDoItem(id: 1, title: "Task 1", deadline: "2022-10-10T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-11-01T10:00:00.807Z", updatedAt: "2024-11-01T10:00:00.117Z")
         await store.send(.addToDo(.presented(.saveResponse(.success(todo1))))) {
-            $0.insertIndex = 0
-            $0.todos.insert(todo1, at: $0.insertIndex!)
+            $0.insertionIndex = 0
+            $0.todos.insert(todo1, at: $0.insertionIndex)
             $0.addToDo = nil
         }
 
@@ -97,8 +97,8 @@ struct ToDoReducerTests {
         }
 
         await store.send(.addToDo(.presented(.saveResponse(.success(todo2))))) {
-            $0.insertIndex = 1
-            $0.todos.insert(todo2, at: $0.insertIndex!)
+            $0.insertionIndex = 1
+            $0.todos.insert(todo2, at: $0.insertionIndex)
             $0.addToDo = nil
         }
 
@@ -108,8 +108,8 @@ struct ToDoReducerTests {
         }
 
         await store.send(.addToDo(.presented(.saveResponse(.success(todo3))))) {
-            $0.insertIndex = 0
-            $0.todos.insert(todo3, at: $0.insertIndex!)
+            $0.insertionIndex = 0
+            $0.todos.insert(todo3, at: $0.insertionIndex)
             $0.addToDo = nil
         }
 
@@ -119,8 +119,8 @@ struct ToDoReducerTests {
         }
 
         await store.send(.addToDo(.presented(.saveResponse(.success(todo4))))) {
-            $0.insertIndex = 3
-            $0.todos.insert(todo4, at: $0.insertIndex!)
+            $0.insertionIndex = 3
+            $0.todos.insert(todo4, at: $0.insertionIndex)
             $0.addToDo = nil
         }
     }
