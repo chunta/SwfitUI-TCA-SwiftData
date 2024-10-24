@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - main   # Run the action when a PR is opened against main branch
+  workflow_dispatch:  # Trigger the workflow on pull requests to the main branch
 
 jobs:
   test:
