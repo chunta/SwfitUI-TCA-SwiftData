@@ -16,8 +16,11 @@ enum ToDoStatus: String, CaseIterable, Identifiable {
 }
 
 struct AddToDoView: View {
-    @Bindable var store: StoreOf<AddToDoReducer>
+    private let maxTitleLength = 32
+    private let maxTags = 3
+    private let maxCharactersPerTag = 8
 
+    @Bindable var store: StoreOf<AddToDoReducer>
     @State private var showDatePicker = false
     @State private var selectedDate = Date()
     @State private var tags: [String] = []
@@ -26,7 +29,7 @@ struct AddToDoView: View {
         ZStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    ToDoTitleField(title: $store.todo.title.sending(\.setTitle))
+                    ToDoTitleField(title: $store.todo.title.sending(\.setTitle), maxLength: maxTitleLength)
 
                     DeadlineField(store: store, showDatePicker: $showDatePicker)
 
@@ -36,7 +39,10 @@ struct AddToDoView: View {
 
                     StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
 
-                    TagInputField(tags: $store.todo.tags.sending(\.setTags), store: store)
+                    TagInputField(tags: $store.todo.tags.sending(\.setTags),
+                                  store: store,
+                                  maxTags: maxTags,
+                                  maxCharactersPerTag: maxCharactersPerTag)
 
                     TagView(tags: $store.todo.tags.sending(\.setTags))
 
@@ -77,15 +83,22 @@ struct AddToDoView: View {
 
 struct ToDoTitleField: View {
     @Binding var title: String
+    let maxLength: Int
 
     var body: some View {
-        TextField("To-Do Title (Required, max 32 characters)", text: $title)
-            .frame(maxWidth: .infinity)
-            .frame(height: 42)
-            .padding(.horizontal)
-            .background(Color(.systemGray5))
-            .cornerRadius(5)
-            .foregroundColor(title.isEmpty ? .gray : .black)
+        VStack(alignment: .leading) {
+            TextField("Enter To-Do Title (required, max \(maxLength) chars)", text: $title)
+                .frame(maxWidth: .infinity)
+                .frame(height: 42)
+                .padding(.horizontal)
+                .background(Color(.systemGray5))
+                .cornerRadius(5)
+                .onChange(of: title) { _, newValue in
+                    if newValue.count > maxLength {
+                        title = String(newValue.prefix(maxLength))
+                    }
+                }
+        }
     }
 }
 
@@ -208,33 +221,13 @@ struct StatusPicker: View {
     }
 }
 
-struct TagField: View {
-    @Binding var tag: String
-
-    var body: some View {
-        HStack {
-            Image(systemName: "tag.fill")
-                .resizable()
-                .frame(width: 20, height: 20)
-                .padding(.trailing, 8)
-
-            TextField("Enter Tag", text: $tag)
-                .frame(maxWidth: .infinity)
-                .frame(height: 42)
-                .padding(.horizontal)
-                .background(Color(.systemGray5))
-                .cornerRadius(5)
-        }
-    }
-}
-
 struct TagInputField: View {
     @Binding var tags: [String]
     @Bindable var store: StoreOf<AddToDoReducer>
     @State private var input: String = ""
 
-    private let maxTags = 3
-    private let maxCharactersPerTag = 8
+    let maxTags: Int
+    let maxCharactersPerTag: Int
 
     var body: some View {
         HStack {
@@ -256,6 +249,11 @@ struct TagInputField: View {
             .background(Color(.systemGray5))
             .cornerRadius(5)
             .disabled(tags.count >= maxTags)
+            .onChange(of: input) { _, newValue in
+                if newValue.count > maxCharactersPerTag {
+                    input = String(newValue.prefix(maxCharactersPerTag))
+                }
+            }
         }
     }
 
