@@ -79,12 +79,13 @@ struct ToDoTitleField: View {
     @Binding var title: String
 
     var body: some View {
-        TextField("Enter To-Do Title", text: $title)
+        TextField("To-Do Title (Required, max 32 characters)", text: $title)
             .frame(maxWidth: .infinity)
             .frame(height: 42)
             .padding(.horizontal)
             .background(Color(.systemGray5))
             .cornerRadius(5)
+            .foregroundColor(title.isEmpty ? .gray : .black)
     }
 }
 
@@ -316,20 +317,26 @@ struct TagItem: View {
 struct ActionButtons: View {
     @Bindable var store: StoreOf<AddToDoReducer>
 
+    private var isTitleValid: Bool {
+        let title = store.todo.title
+        return !title.isEmpty && title.count <= 32
+    }
+
     var body: some View {
         VStack(spacing: 12) {
             Button(action: {
-                if !store.isSaving {
+                if isTitleValid, !store.isSaving {
                     store.send(.saveButtonTapped)
                 }
             }) {
                 Text("Add")
                     .frame(maxWidth: .infinity)
                     .frame(height: 42)
-                    .background(Color.blue)
+                    .background(isTitleValid ? Color.blue : Color.gray)
                     .foregroundColor(.white)
                     .cornerRadius(5)
             }
+            .disabled(!isTitleValid)
 
             Button(action: {
                 if !store.isSaving {
