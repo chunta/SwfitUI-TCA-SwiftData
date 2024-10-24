@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct ToDoListView: View {
-    @Bindable var store: StoreOf<ToDoListFeature>
+    @Bindable var store: StoreOf<ToDoListReducer>
     @State private var showAlert = true
 
     var body: some View {
@@ -199,7 +199,7 @@ struct TodoRow: View {
     NavigationStack {
         ToDoListView(
             store: Store(
-                initialState: ToDoListFeature.State(todos: [
+                initialState: ToDoListReducer.State(todos: [
                     ToDoItem(id: 0,
                              title: "Play Game",
                              deadline: "2024-12-14T12:34:56.789+0530",
@@ -227,7 +227,7 @@ struct TodoRow: View {
                              createdAt: "",
                              updatedAt: ""),
                 ])) {
-                    ToDoListFeature()
+                    ToDoListReducer()
                 }
         )
     }

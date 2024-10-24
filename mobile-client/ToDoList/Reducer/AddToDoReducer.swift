@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Foundation
 
 @Reducer
-struct AddToDoFeature {
+struct AddToDoReducer {
     @ObservableState
     struct State: Equatable {
         var todo: ToDoItem

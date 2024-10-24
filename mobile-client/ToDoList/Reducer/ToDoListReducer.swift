@@ -40,10 +40,10 @@ enum ToDoError: Error, LocalizedError, Equatable {
 }
 
 @Reducer
-struct ToDoListFeature {
+struct ToDoListReducer {
     @ObservableState
     struct State: Equatable {
-        @Presents var addToDo: AddToDoFeature.State?
+        @Presents var addToDo: AddToDoReducer.State?
         var todos: IdentifiedArrayOf<ToDoItem> = []
         var isLoading: Bool = false
         var error: String?
@@ -57,7 +57,7 @@ struct ToDoListFeature {
     enum Action: Equatable {
         case toggleEditMode
         case addButtonTapped
-        case addToDo(PresentationAction<AddToDoFeature.Action>)
+        case addToDo(PresentationAction<AddToDoReducer.Action>)
         case fetchToDos
         case fetchToDosResponse(Result<[ToDoItem], ToDoError>)
         case deleteToDoItem(Int)
@@ -106,7 +106,7 @@ struct ToDoListFeature {
                 return .none
 
             case .addButtonTapped:
-                state.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+                state.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
                 return .none
 
             case .addToDo(.presented(.cancelButtonTapped)):
@@ -200,7 +200,7 @@ struct ToDoListFeature {
             }
         }
         .ifLet(\.$addToDo, action: \.addToDo) {
-            AddToDoFeature()
+            AddToDoReducer()
         }
     }
 }
