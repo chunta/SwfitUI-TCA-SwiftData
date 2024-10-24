@@ -26,8 +26,8 @@ jobs:
       - name: Generate code coverage report
         uses: michaelhenry/swifty-code-coverage@v1.0.0
         with:
-          build-path: mobile-client/DerivedData # Correct DerivedData path
-          target: ToDoList # Use the correct target (usually the app or test target)
+          build-path: ./mobile-client/DerivedData # Correct DerivedData path
+          target: ToDoList.app # Use the correct target (usually the app or test target)
           is-spm: false # 
 
         
