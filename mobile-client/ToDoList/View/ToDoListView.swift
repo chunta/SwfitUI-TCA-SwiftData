@@ -20,8 +20,19 @@ struct ToDoListView: View {
                 }
                 addButton
             }
-            .navigationTitle("To-Do List (\(store.todos.count))")
             .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("All ToDos")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("\(store.todos.count)")
+                        .padding(8)
+                        .font(.footnote)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                }
+            }
             .navigationBarItems(trailing:
                 Button(action: {
                     store.send(.toggleEditMode)
