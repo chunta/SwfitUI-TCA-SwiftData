@@ -20,32 +20,32 @@ struct ToDoRemoteServiceTests {
                      title: "Buy groceries",
                      status: "pending",
                      tags: ["errand"],
-                     createdAt: "2024-10-10T10:00:00Z",
-                     updatedAt: "2024-10-15T10:00:00Z"),
+                     createdAt: "2024-10-10T10:00:00.117Z",
+                     updatedAt: "2024-10-15T10:00:00.117Z"),
             ToDoItem(id: 2,
                      title: "Finish project report",
                      status: "in-progress",
                      tags: ["work"],
-                     createdAt: "2024-10-01T09:00:00Z",
-                     updatedAt: "2024-10-12T09:00:00Z"),
+                     createdAt: "2024-10-01T09:00:00.117Z",
+                     updatedAt: "2024-10-12T09:00:00.117Z"),
             ToDoItem(id: 3,
                      title: "Book dentist appointment",
                      status: "pending",
                      tags: ["health"],
-                     createdAt: "2024-09-20T11:00:00Z",
-                     updatedAt: "2024-10-05T11:00:00Z"),
+                     createdAt: "2024-09-20T11:00:00.117Z",
+                     updatedAt: "2024-10-05T11:00:00.117Z"),
             ToDoItem(id: 4,
                      title: "Plan weekend trip",
                      status: "completed",
                      tags: ["travel"],
-                     createdAt: "2024-08-15T12:30:00Z",
-                     updatedAt: "2024-09-01T12:30:00Z"),
+                     createdAt: "2024-08-15T12:30:00.117Z",
+                     updatedAt: "2024-09-01T12:30:00.117Z"),
             ToDoItem(id: 5,
                      title: "Clean the garage",
                      status: "pending",
                      tags: ["home", "chores"],
-                     createdAt: "2024-07-22T13:45:00Z",
-                     updatedAt: "2024-08-30T13:45:00Z"),
+                     createdAt: "2024-07-22T13:45:00.117Z",
+                     updatedAt: "2024-08-30T13:45:00.117Z"),
         ]
         let fetchResponse = FetchToDoResponse(success: true, data: todos)
         let jsonData = try! JSONEncoder().encode(fetchResponse)
@@ -140,8 +140,8 @@ struct ToDoRemoteServiceTests {
                             title: "Buy groceries",
                             status: "pending",
                             tags: ["errand"],
-                            createdAt: "2024-10-10T10:00:00Z",
-                            updatedAt: "2024-10-15T10:00:00Z")
+                            createdAt: "2024-10-10T10:00:00.117Z",
+                            updatedAt: "2024-10-15T10:00:00.117Z")
         let fetchResponse = AddToDoResponse(success: true, data: todo)
         let jsonData = try! JSONEncoder().encode(fetchResponse)
         let url = URL(string: "http://localhost:5000/todos")!
@@ -164,8 +164,8 @@ struct ToDoRemoteServiceTests {
                             title: "Buy groceries",
                             status: "pending",
                             tags: ["errand"],
-                            createdAt: "2024-10-10T10:00:00Z",
-                            updatedAt: "2024-10-15T10:00:00Z")
+                            createdAt: "2024-10-10T10:00:00.333Z",
+                            updatedAt: "2024-10-15T10:00:00.333Z")
         let fetchResponse = AddToDoResponse(success: true, data: todo)
         let jsonData = try! JSONEncoder().encode(fetchResponse)
         let url = URL(string: "http://localhost:5000/todos")!
@@ -190,8 +190,8 @@ struct ToDoRemoteServiceTests {
                             title: "Buy groceries",
                             status: "pending",
                             tags: ["errand"],
-                            createdAt: "2024-10-10T10:00:00Z",
-                            updatedAt: "2024-10-15T10:00:00Z")
+                            createdAt: "2024-10-10T10:00:00.333Z",
+                            updatedAt: "2024-10-15T10:00:00.333Z")
         let fetchResponse = AddToDoResponse(success: true, data: todo)
         let jsonData = try! JSONEncoder().encode(fetchResponse)
         let url = URL(string: "http://localhost:5000/todos")!
@@ -219,8 +219,8 @@ struct ToDoRemoteServiceTests {
                             title: "Buy groceries",
                             status: "pending",
                             tags: ["errand"],
-                            createdAt: "2024-10-10T10:00:00Z",
-                            updatedAt: "2024-10-15T10:00:00Z")
+                            createdAt: "2024-10-10T10:00:00.333Z",
+                            updatedAt: "2024-10-15T10:00:00.333Z")
         let fetchResponse = AddToDoResponse(success: true, data: todo)
         let jsonData = try! JSONEncoder().encode(fetchResponse)
         let url = URL(string: "http://localhost:5000/todos")!
@@ -252,32 +252,32 @@ struct ToDoRemoteServiceTests {
         mockLocalService.todos = [
             ToDoItemData(id: 1,
                          title: "Local Title",
-                         deadline: "2024-11-01T09:00:00Z",
+                         deadline: "2024-11-01T09:00:00.333Z",
                          status: "in-progress",
                          tags: [Tag(name: "work")],
-                         createdAt: "2024-10-10T08:30:00Z",
-                         updatedAt: "2024-10-20T10:15:00Z"),
+                         createdAt: "2024-10-10T08:30:00.333Z",
+                         updatedAt: "2024-10-20T10:15:00.333Z"),
             ToDoItemData(id: 2,
                          title: "Buy a birthday gift for John",
                          deadline: "2024-10-25T18:00:00Z",
                          status: "pending",
                          tags: [Tag(name: "work"), Tag(name: "birthday")],
-                         createdAt: "2024-10-05T12:00:00Z",
-                         updatedAt: "2024-10-19T14:45:00Z"),
+                         createdAt: "2024-10-05T12:00:00.333Z",
+                         updatedAt: "2024-10-19T14:45:00.333Z"),
             ToDoItemData(id: 3,
                          title: "Complete home renovation plan",
-                         deadline: "2024-12-10T17:00:00Z",
+                         deadline: "2024-12-10T17:00:00.333Z",
                          status: "pending",
                          tags: [],
-                         createdAt: "2024-09-25T14:00:00Z",
-                         updatedAt: "2024-10-10T09:30:00Z"),
+                         createdAt: "2024-09-25T14:00:00.333Z",
+                         updatedAt: "2024-10-10T09:30:00.333Z"),
             ToDoItemData(id: 4,
                          title: "Sleep",
-                         deadline: "2024-11-10T17:00:00Z",
+                         deadline: "2024-11-10T17:00:00.333Z",
                          status: "todo",
                          tags: [],
-                         createdAt: "2024-09-25T14:00:00Z",
-                         updatedAt: "2024-11-07T09:30:00Z"),
+                         createdAt: "2024-09-25T14:00:00.333Z",
+                         updatedAt: "2024-11-07T09:30:00.333Z"),
         ]
 
         let todos = [
@@ -285,14 +285,14 @@ struct ToDoRemoteServiceTests {
                      title: "New Title",
                      status: "pending",
                      tags: ["errand"],
-                     createdAt: "2024-10-10T10:00:00Z",
-                     updatedAt: "2024-10-15T10:00:00Z"),
+                     createdAt: "2024-10-10T10:00:00.333Z",
+                     updatedAt: "2024-10-15T10:00:00.333Z"),
             ToDoItem(id: 2,
                      title: "Finish project report",
                      status: "in-progress",
                      tags: ["work"],
-                     createdAt: "2024-10-01T09:00:00Z",
-                     updatedAt: "2024-10-12T09:00:00Z"),
+                     createdAt: "2024-10-01T09:00:00.333Z",
+                     updatedAt: "2024-10-12T09:00:00.333Z"),
         ]
         let fetchResponse = FetchToDoResponse(success: true, data: todos)
         let jsonData = try! JSONEncoder().encode(fetchResponse)
@@ -325,18 +325,18 @@ struct ToDoRemoteServiceTests {
         let originLocalToDos = [
             ToDoItemData(id: 1,
                          title: "Local Title",
-                         deadline: "2024-11-01T09:00:00Z",
+                         deadline: "2024-11-01T09:00:00.333Z",
                          status: "in-progress",
                          tags: [Tag(name: "work")],
-                         createdAt: "2024-10-10T08:30:00Z",
-                         updatedAt: "2024-10-20T10:15:00Z"),
+                         createdAt: "2024-10-10T08:30:00.333Z",
+                         updatedAt: "2024-10-20T10:15:00.333Z"),
             ToDoItemData(id: 2,
                          title: "Buy a birthday gift for John",
                          deadline: "2024-10-25T18:00:00Z",
                          status: "pending",
                          tags: [Tag(name: "work"), Tag(name: "birthday")],
-                         createdAt: "2024-10-05T12:00:00Z",
-                         updatedAt: "2024-10-19T14:45:00Z"),
+                         createdAt: "2024-10-05T12:00:00.333Z",
+                         updatedAt: "2024-10-19T14:45:00.333Z"),
         ]
 
         mockLocalService.todos = originLocalToDos
@@ -346,28 +346,28 @@ struct ToDoRemoteServiceTests {
                      title: "New Title",
                      status: "pending",
                      tags: ["errand"],
-                     createdAt: "2024-10-10T10:00:00Z",
-                     updatedAt: "2024-10-15T10:00:00Z"),
+                     createdAt: "2024-10-10T10:00:00.333Z",
+                     updatedAt: "2024-10-15T10:00:00.333Z"),
             ToDoItem(id: 2,
                      title: "Finish project report",
                      status: "in-progress",
                      tags: ["sleep"],
-                     createdAt: "2024-10-01T09:00:00Z",
-                     updatedAt: "2024-10-12T09:00:00Z"),
+                     createdAt: "2024-10-01T09:00:00.333Z",
+                     updatedAt: "2024-10-12T09:00:00.323Z"),
             ToDoItem(id: 3,
                      title: "Complete home renovation plan",
-                     deadline: "2024-12-10T17:00:00Z",
+                     deadline: "2024-12-10T17:00:00.323Z",
                      status: "pending",
                      tags: [],
-                     createdAt: "2024-09-25T14:00:00Z",
-                     updatedAt: "2024-10-10T09:30:00Z"),
+                     createdAt: "2024-09-25T14:00:00.323Z",
+                     updatedAt: "2024-10-10T09:30:00.323Z"),
             ToDoItem(id: 4,
                      title: "Sleep",
-                     deadline: "2024-11-10T17:00:00Z",
+                     deadline: "2024-11-10T17:00:00.323Z",
                      status: "todo",
                      tags: [],
-                     createdAt: "2024-09-25T14:00:00Z",
-                     updatedAt: "2024-11-07T09:30:00Z"),
+                     createdAt: "2024-09-25T14:00:00.323Z",
+                     updatedAt: "2024-11-07T09:30:00.323Z"),
         ]
         let fetchResponse = FetchToDoResponse(success: true, data: todos)
         let jsonData = try! JSONEncoder().encode(fetchResponse)

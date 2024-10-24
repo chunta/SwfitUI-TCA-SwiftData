@@ -8,8 +8,8 @@ struct ToDoReducerTests {
     @Test
     func testFetchToDosSuccess() async {
         let todos = [
-            ToDoItem(id: 1, title: "Task 1", status: "in-progress", tags: [], createdAt: "2024-10-10T08:30:00Z", updatedAt: "2024-10-20T10:15:00Z"),
-            ToDoItem(id: 2, title: "Task 2", status: "pending", tags: [], createdAt: "2024-10-15T09:00:00Z", updatedAt: "2024-10-25T14:00:00Z"),
+            ToDoItem(id: 1, title: "Task 1", status: "in-progress", tags: [], createdAt: "2024-10-10T08:30:00.807Z", updatedAt: "2024-10-20T10:15:00.807Z"),
+            ToDoItem(id: 2, title: "Task 2", status: "pending", tags: [], createdAt: "2024-10-15T09:00:00.807Z", updatedAt: "2024-10-25T14:00:00.807Z"),
         ]
 
         let mockService = MockToDoRemoteService()
@@ -83,7 +83,7 @@ struct ToDoReducerTests {
         }
 
         // We not only test addition value, but only insertion index
-        let todo1 = ToDoItem(id: 1, title: "Task 1", deadline: "2022-10-10T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-11-01T10:00:00Z", updatedAt: "2024-11-01T10:00:00Z")
+        let todo1 = ToDoItem(id: 1, title: "Task 1", deadline: "2022-10-10T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-11-01T10:00:00.807Z", updatedAt: "2024-11-01T10:00:00.117Z")
         await store.send(.addToDo(.presented(.saveResponse(.success(todo1))))) {
             $0.insertIndex = 0
             $0.todos.insert(todo1, at: $0.insertIndex!)
@@ -128,8 +128,8 @@ struct ToDoReducerTests {
     @Test
     func testDeleteToDoSuccess() async {
         let todos = [
-            ToDoItem(id: 1, title: "Task 1", status: "in-progress", tags: [], createdAt: "2024-10-10T08:30:00Z", updatedAt: "2024-10-20T10:15:00Z"),
-            ToDoItem(id: 2, title: "Task 2", status: "pending", tags: [], createdAt: "2024-10-15T09:00:00Z", updatedAt: "2024-10-25T14:00:00Z"),
+            ToDoItem(id: 1, title: "Task 1", status: "in-progress", tags: [], createdAt: "2024-10-10T08:30:00.117Z", updatedAt: "2024-10-20T10:15:00.117Z"),
+            ToDoItem(id: 2, title: "Task 2", status: "pending", tags: [], createdAt: "2024-10-15T09:00:00.117Z", updatedAt: "2024-10-25T14:00:00.117Z"),
         ]
 
         let mockService = MockToDoRemoteService()
@@ -156,8 +156,8 @@ struct ToDoReducerTests {
     @Test
     func testDeleteToDoFailure() async {
         let todos = [
-            ToDoItem(id: 1, title: "Task 1", status: "in-progress", tags: [], createdAt: "2024-10-10T08:30:00Z", updatedAt: "2024-10-20T10:15:00Z"),
-            ToDoItem(id: 2, title: "Task 2", status: "pending", tags: [], createdAt: "2024-10-15T09:00:00Z", updatedAt: "2024-10-25T14:00:00Z"),
+            ToDoItem(id: 1, title: "Task 1", status: "in-progress", tags: [], createdAt: "2024-10-10T08:30:00.117Z", updatedAt: "2024-10-20T10:15:00.117Z"),
+            ToDoItem(id: 2, title: "Task 2", status: "pending", tags: [], createdAt: "2024-10-15T09:00:00.117Z", updatedAt: "2024-10-25T14:00:00.117Z"),
         ]
 
         let mockService = MockToDoRemoteService()
