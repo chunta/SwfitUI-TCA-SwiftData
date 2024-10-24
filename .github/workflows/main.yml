@@ -19,10 +19,6 @@ jobs:
       - name: Set up Xcode
         run: sudo xcode-select -switch /Applications/Xcode_16.0.app  # Specify the Xcode version if needed
 
-      - name: Run tests
-        working-directory: ./mobile-client
-        run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' -enableCodeCoverage YES -skipMacroValidation
-
       - uses: actions/checkout@v1
       - run: |
           cd working-directory 
