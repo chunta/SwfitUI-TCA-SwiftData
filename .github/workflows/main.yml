@@ -1,0 +1,24 @@
+name: Swift CI
+
+on:
+  push:
+    branches:
+      - main   # Run the action when pushing to the main branch
+  pull_request:
+    branches:
+      - main   # Run the action when a PR is opened against main branch
+
+jobs:
+  test:
+    runs-on: macos-latest  # Use the latest macOS runner, required for Xcode
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  # Checkout the repository code
+
+      - name: Set up Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_16.0.app  # Specify the Xcode version if needed
+
+      - name: Run tests
+        working-directory: ./mobile-client
+        run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' -skipMacroValidation
