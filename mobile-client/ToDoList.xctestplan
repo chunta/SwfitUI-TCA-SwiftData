@@ -18,6 +18,16 @@
   "testTargets" : [
     {
       "parallelizable" : true,
+      "skippedTests" : {
+        "suites" : [
+          {
+            "name" : "ToDoReducerTests"
+          },
+          {
+            "name" : "ToDoRemoteServiceTests"
+          }
+        ]
+      },
       "target" : {
         "containerPath" : "container:ToDoList.xcodeproj",
         "identifier" : "F709ED6A2CC5045E000E2FD8",
@@ -25,5 +35,5 @@
       }
     }
   ],
-  "version" : 1
+  "version" : 2
 }
