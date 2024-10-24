@@ -20,6 +20,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_16.0.app  # Specify the Xcode version if needed
 
       - name: Set up dependencies
+        working-directory: mobile-client
         run: swift package resolve  # Resolve any Swift Package Manager dependencies
 
       - name: Run tests
