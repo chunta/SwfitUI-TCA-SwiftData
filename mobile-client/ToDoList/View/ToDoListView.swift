@@ -2,50 +2,37 @@ import ComposableArchitecture
 import SwiftUI
 
 struct ToDoListView: View {
-    @Bindable var store: StoreOf<ToDoListFeature>
+    @Bindable var store: StoreOf<ToDoListReducer>
+    @State private var showAlert = true
 
     var body: some View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
                     Spacer().frame(height: 6)
-                    List {
-                        ForEach(store.todos) { todo in
-                            TodoRow(todo: todo)
-                        }
-                        .onDelete { indexSet in
-                            for index in indexSet {
-                                let todo = store.todos[index]
-                                store.send(.deleteToDoItem(todo.id))
-                            }
-                        }
-                    }
-                    .listStyle(.plain)
-                    .listRowBackground(Color.clear)
-                    .listRowSpacing(0)
-                }
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            store.send(.addButtonTapped)
-                        }) {
-                            Image(systemName: "plus")
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .padding()
-                                .background(Color(.systemGray2))
-                                .foregroundColor(.white)
-                                .clipShape(Circle())
-                        }
-                        .padding(.trailing, 40)
-                        .padding(.bottom, 40)
+                    if store.isLoading {
+                        ProgressView("Loading...")
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .padding()
+                    } else {
+                        todoList
                     }
                 }
+                addButton
             }
             .navigationTitle("To-Do List (\(store.todos.count))")
             .navigationBarTitleDisplayMode(.large)
+            .navigationBarItems(trailing:
+                Button(action: {
+                    store.send(.toggleEditMode)
+                }) {
+                    Image(systemName: store.isEditing ? "checkmark.circle" : "square.and.pencil")
+                }
+            )
+            .onAppear {
+                store.send(.fetchToDos)
+            }
+            .alert($store.scope(state: \.alert, action: \.alert))
         }
         .sheet(
             item: $store.scope(state: \.addToDo, action: \.addToDo)
@@ -54,6 +41,85 @@ struct ToDoListView: View {
                 AddToDoView(store: addContactStore)
             }
             .presentationDetents([.height(570)])
+        }
+    }
+
+    private var todoList: some View {
+        ScrollViewReader { scrollProxy in
+            List {
+                ForEach(store.todos) { todo in
+                    todoRow(todo)
+                }
+                .deleteDisabled(true)
+            }
+            .listStyle(.plain)
+            .listRowBackground(Color.clear)
+            .onChange(of: store.todos) { _, _ in
+                if let firstTodo = store.todos.first {
+                    withAnimation {
+                        scrollProxy.scrollTo(firstTodo.id, anchor: .center)
+                    }
+                }
+            }
+        }
+    }
+
+    private func todoRow(_ todo: ToDoItem) -> some View {
+        ZStack {
+            HStack {
+                TodoRow(todo: todo)
+                Spacer()
+                if store.isEditing {
+                    Button(action: {
+                        guard !store.isDeleting else { return }
+                        store.send(.deleteToDoItem(todo.id))
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                            .frame(width: 24, height: 24)
+                    }
+                    .padding(.horizontal, 6)
+                }
+            }
+            .padding(.vertical, 3)
+            .padding(.horizontal, 0)
+
+            if store.isDeleting, store.deletingTodoID == todo.id {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .frame(width: 24, height: 24)
+            }
+        }
+    }
+
+    private func deleteTodo(indexSet: IndexSet) {
+        for index in indexSet {
+            let todo = store.todos[index]
+            store.send(.deleteToDoItem(todo.id))
+        }
+    }
+
+    private var addButton: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button(action: {
+                    if !store.isLoading {
+                        store.send(.addButtonTapped)
+                    }
+                }) {
+                    Image(systemName: "plus")
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                        .padding()
+                        .background(Color(.systemGray2))
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                }
+                .padding(.trailing, 40)
+                .padding(.bottom, 40)
+            }
         }
     }
 }
@@ -68,8 +134,8 @@ struct TodoRow: View {
         return formatter
     }
 
-    func formattedDeadline(deadline: String) -> String {
-        if let date = dateFormatter.date(from: deadline) {
+    func formattedDeadline(deadline: String?) -> String {
+        if let deadline, let date = dateFormatter.date(from: deadline) {
             let displayFormatter = DateFormatter()
             displayFormatter.dateStyle = .medium
             displayFormatter.timeStyle = .medium
@@ -78,7 +144,7 @@ struct TodoRow: View {
             let timeZoneString = deadline.hasSuffix("Z") ? "UTC" : String(deadline.suffix(5))
             return "\(formattedDate) (\(timeZoneString))"
         }
-        return "Invalid date"
+        return ""
     }
 
     var body: some View {
@@ -96,7 +162,7 @@ struct TodoRow: View {
             .padding(.vertical, 4)
 
             HStack {
-                Text(formattedDeadline(deadline: todo.deadline))
+                Text(formattedDeadline(deadline: todo.deadline ?? ""))
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
@@ -117,11 +183,11 @@ struct TodoRow: View {
 
     private func statusColor(for status: String) -> Color {
         switch status {
-        case ToDoStatus.pending.rawValue:
+        case ToDoStatus.todo.rawValue:
             Color.purple
         case ToDoStatus.inProgress.rawValue:
             Color.blue
-        case ToDoStatus.completed.rawValue:
+        case ToDoStatus.done.rawValue:
             Color.green
         default:
             Color.gray
@@ -133,17 +199,17 @@ struct TodoRow: View {
     NavigationStack {
         ToDoListView(
             store: Store(
-                initialState: ToDoListFeature.State(todos: [
+                initialState: ToDoListReducer.State(todos: [
                     ToDoItem(id: 0,
                              title: "Play Game",
                              deadline: "2024-12-14T12:34:56.789+0530",
-                             status: ToDoStatus.pending.rawValue, tags: ["Games", "Fun"],
+                             status: ToDoStatus.todo.rawValue, tags: ["Games", "Fun"],
                              createdAt: "",
                              updatedAt: ""),
                     ToDoItem(id: 1,
                              title: "Game",
                              deadline: "2024-10-05T22:32:00.000+0800",
-                             status: ToDoStatus.pending.rawValue, tags: ["Fun"],
+                             status: ToDoStatus.todo.rawValue, tags: ["Fun"],
                              createdAt: "",
                              updatedAt: ""),
                     ToDoItem(id: 2,
@@ -161,7 +227,7 @@ struct TodoRow: View {
                              createdAt: "",
                              updatedAt: ""),
                 ])) {
-                    ToDoListFeature()
+                    ToDoListReducer()
                 }
         )
     }

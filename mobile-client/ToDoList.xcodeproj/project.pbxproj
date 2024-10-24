@@ -23,6 +23,7 @@
 /* Begin PBXFileReference section */
 		F709ED592CC5045B000E2FD8 /* ToDoList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToDoList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F709ED6B2CC5045E000E2FD8 /* ToDoListTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ToDoListTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F7F09F232CC8FA8B007C327B /* ToDoList.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ToDoList.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -60,6 +61,7 @@
 		F709ED502CC5045B000E2FD8 = {
 			isa = PBXGroup;
 			children = (
+				F7F09F232CC8FA8B007C327B /* ToDoList.xctestplan */,
 				F709ED5A2CC5045B000E2FD8 /* Products */,
 				F709ED5B2CC5045C000E2FD8 /* ToDoList */,
 				F709ED6E2CC5045E000E2FD8 /* ToDoListTests */,

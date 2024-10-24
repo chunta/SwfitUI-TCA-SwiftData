@@ -9,45 +9,69 @@ extension UISegmentedControl {
 }
 
 enum ToDoStatus: String, CaseIterable, Identifiable {
-    case pending = "Pending"
-    case inProgress = "In Progress"
-    case completed = "Completed"
+    case todo
+    case inProgress
+    case done
     var id: String { rawValue }
 }
 
 struct AddToDoView: View {
-    @Bindable var store: StoreOf<AddToDoFeature>
+    @Bindable var store: StoreOf<AddToDoReducer>
 
     @State private var showDatePicker = false
     @State private var selectedDate = Date()
     @State private var tags: [String] = []
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ToDoTitleField(title: $store.todo.title.sending(\.setTitle))
+        ZStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    ToDoTitleField(title: $store.todo.title.sending(\.setTitle))
 
-                DeadlineField(store: store, showDatePicker: $showDatePicker)
+                    DeadlineField(store: store, showDatePicker: $showDatePicker)
 
-                if showDatePicker {
-                    DatePickerComponent(store: store, selectedDate: $selectedDate)
+                    if showDatePicker {
+                        DatePickerComponent(store: store, selectedDate: $selectedDate)
+                    }
+
+                    StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
+
+                    TagInputField(tags: $store.todo.tags.sending(\.setTags), store: store)
+
+                    TagView(tags: $store.todo.tags.sending(\.setTags))
+
+                    ActionButtons(store: store)
+
+                    Spacer()
                 }
-
-                StatusPicker(selectedStatus: $store.todo.status.sending(\.setStatus))
-
-                TagInputField(tags: $store.todo.tags.sending(\.setTags), store: store)
-
-                TagView(tags: $store.todo.tags.sending(\.setTags))
-
-                ActionButtons(store: store)
-
-                Spacer()
+                .padding(.horizontal, 24)
+                .padding(.vertical)
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical)
+            .navigationTitle("Add To-Do")
+            .navigationBarTitleDisplayMode(.large)
+            .alert(isPresented: Binding<Bool>(
+                get: { store.saveError != nil },
+                set: { _ in }
+            )) {
+                Alert(
+                    title: Text("Error"),
+                    message: Text(store.saveError ?? "An unknown error occurred"),
+                    dismissButton: .default(Text("OK")) {
+                        store.send(.setError(nil))
+                    }
+                )
+            }
+
+            if store.isSaving {
+                ProgressView("Saving...")
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .frame(width: 100, height: 100)
+                    .background(Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 10))
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .edgesIgnoringSafeArea(.all)
+            }
         }
-        .navigationTitle("Add To-Do")
-        .navigationBarTitleDisplayMode(.large)
     }
 }
 
@@ -65,13 +89,13 @@ struct ToDoTitleField: View {
 }
 
 struct DeadlineField: View {
-    @Bindable var store: StoreOf<AddToDoFeature>
+    @Bindable var store: StoreOf<AddToDoReducer>
     @Binding var showDatePicker: Bool
 
     var body: some View {
         HStack {
             TextField("Deadline", text: Binding(
-                get: { store.todo.deadline },
+                get: { store.todo.deadline ?? "" },
                 set: { _ in }
             ))
             .frame(maxWidth: .infinity)
@@ -108,14 +132,21 @@ struct AutoResizingTextFieldModifier: ViewModifier {
 }
 
 struct DatePickerComponent: View {
-    @Bindable var store: StoreOf<AddToDoFeature>
+    @Bindable var store: StoreOf<AddToDoReducer>
     @Binding var selectedDate: Date
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        formatter.timeZone = TimeZone.current
         return formatter
     }()
+
+    private func formatDate(_ date: Date) -> String {
+        var formattedDate = dateFormatter.string(from: date)
+        formattedDate = formattedDate.replacingOccurrences(of: "(\\+\\d{2})(\\d{2})", with: "$1:$2", options: .regularExpression)
+        return formattedDate
+    }
 
     let dateRange: ClosedRange<Date> = {
         let calendar = Calendar.current
@@ -128,10 +159,15 @@ struct DatePickerComponent: View {
         DatePicker("Select Deadline",
                    selection: Binding<Date>(
                        get: {
-                           dateFormatter.date(from: store.todo.deadline) ?? Date()
+                           if let deadline = store.todo.deadline,
+                              let date = dateFormatter.date(from: deadline)
+                           {
+                               return date
+                           }
+                           return Date()
                        },
                        set: { newDate in
-                           let formattedDate = dateFormatter.string(from: newDate)
+                           let formattedDate = formatDate(newDate)
                            store.send(.setDeadline(formattedDate))
                            selectedDate = newDate
                        }
@@ -165,7 +201,7 @@ struct StatusPicker: View {
         }
         .onAppear {
             if selectedStatus.isEmpty {
-                selectedStatus = ToDoStatus.pending.rawValue
+                selectedStatus = ToDoStatus.todo.rawValue
             }
         }
     }
@@ -193,7 +229,7 @@ struct TagField: View {
 
 struct TagInputField: View {
     @Binding var tags: [String]
-    @Bindable var store: StoreOf<AddToDoFeature>
+    @Bindable var store: StoreOf<AddToDoReducer>
     @State private var input: String = ""
 
     private let maxTags = 3
@@ -278,12 +314,14 @@ struct TagItem: View {
 }
 
 struct ActionButtons: View {
-    @Bindable var store: StoreOf<AddToDoFeature>
+    @Bindable var store: StoreOf<AddToDoReducer>
 
     var body: some View {
         VStack(spacing: 12) {
             Button(action: {
-                store.send(.saveButtonTapped)
+                if !store.isSaving {
+                    store.send(.saveButtonTapped)
+                }
             }) {
                 Text("Add")
                     .frame(maxWidth: .infinity)
@@ -294,7 +332,9 @@ struct ActionButtons: View {
             }
 
             Button(action: {
-                store.send(.cancelButtonTapped)
+                if !store.isSaving {
+                    store.send(.cancelButtonTapped)
+                }
             }) {
                 Text("Cancel")
                     .frame(maxWidth: .infinity)
@@ -312,12 +352,12 @@ struct ActionButtons: View {
     NavigationStack {
         AddToDoView(
             store: Store(
-                initialState: AddToDoFeature.State(
+                initialState: AddToDoReducer.State(
                     todo:
                     ToDoItem(id: 0, title: "", deadline: "", status: "", tags: [""], createdAt: "", updatedAt: "")
                 )
             ) {
-                AddToDoFeature()
+                AddToDoReducer()
             }
         )
     }
