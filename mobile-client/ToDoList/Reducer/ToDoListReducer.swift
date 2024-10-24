@@ -51,6 +51,7 @@ struct ToDoListReducer {
         var deletingTodoID: Int?
         var isEditing: Bool = false
         var editingTodoId: Int?
+        var insertIndex: Int?
         @Presents var alert: AlertState<Action.Alert>?
     }
 
@@ -120,6 +121,8 @@ struct ToDoListReducer {
                     let newDeadline = todo.deadline.flatMap { ToDoDateFormatter.isoDateFormatter.date(from: $0) } ?? Date.distantFuture
                     return newDeadline < existingDeadline
                 } ?? state.todos.endIndex
+
+                state.insertIndex = index
 
                 // Insert the new todo at the calculated position
                 state.todos.insert(todo, at: index)

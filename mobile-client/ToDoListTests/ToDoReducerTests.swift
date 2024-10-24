@@ -69,8 +69,6 @@ struct ToDoReducerTests {
 
     @Test
     func testAddToDoSuccess() async {
-        let newTodo = ToDoItem(id: 3, title: "New Task", status: "pending", tags: [], createdAt: "2024-11-01T10:00:00Z", updatedAt: "2024-11-01T10:00:00Z")
-
         let mockService = MockToDoRemoteService()
         mockService.todos = []
 
@@ -84,8 +82,45 @@ struct ToDoReducerTests {
             $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
         }
 
-        await store.send(.addToDo(.presented(.saveResponse(.success(newTodo))))) {
-            $0.todos.insert(newTodo, at: 0)
+        // We not only test addition value, but only insertion index
+        let todo1 = ToDoItem(id: 1, title: "Task 1", deadline: "2022-10-10T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-11-01T10:00:00Z", updatedAt: "2024-11-01T10:00:00Z")
+        await store.send(.addToDo(.presented(.saveResponse(.success(todo1))))) {
+            $0.insertIndex = 0
+            $0.todos.insert(todo1, at: $0.insertIndex!)
+            $0.addToDo = nil
+        }
+
+        let todo2 = ToDoItem(id: 2, title: "Task 2", deadline: "2024-10-05T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-10-01T10:00:00.807Z", updatedAt: "2024-10-01T10:00:00.807Z")
+
+        await store.send(.addButtonTapped) {
+            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+        }
+
+        await store.send(.addToDo(.presented(.saveResponse(.success(todo2))))) {
+            $0.insertIndex = 1
+            $0.todos.insert(todo2, at: $0.insertIndex!)
+            $0.addToDo = nil
+        }
+
+        let todo3 = ToDoItem(id: 3, title: "Task 3", deadline: "2021-10-10T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-10-01T11:00:00.807Z", updatedAt: "2024-10-01T11:00:00.807Z")
+        await store.send(.addButtonTapped) {
+            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+        }
+
+        await store.send(.addToDo(.presented(.saveResponse(.success(todo3))))) {
+            $0.insertIndex = 0
+            $0.todos.insert(todo3, at: $0.insertIndex!)
+            $0.addToDo = nil
+        }
+
+        let todo4 = ToDoItem(id: 4, title: "Task 4", deadline: nil, status: "pending", tags: [], createdAt: "2024-10-01T11:00:00.807Z", updatedAt: "2024-10-01T11:00:00.807Z")
+        await store.send(.addButtonTapped) {
+            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+        }
+
+        await store.send(.addToDo(.presented(.saveResponse(.success(todo4))))) {
+            $0.insertIndex = 3
+            $0.todos.insert(todo4, at: $0.insertIndex!)
             $0.addToDo = nil
         }
     }
