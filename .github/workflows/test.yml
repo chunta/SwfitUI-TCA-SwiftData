@@ -21,4 +21,4 @@ jobs:
 
       - name: Run tests
         working-directory: ./mobile-client
-        run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.0'
+        run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.0' -skipMacroValidation
