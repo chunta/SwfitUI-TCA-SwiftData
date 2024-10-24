@@ -124,9 +124,13 @@ struct ToDoListView: View {
                         .resizable()
                         .frame(width: 24, height: 24)
                         .padding()
-                        .background(Color(.systemGray2))
-                        .foregroundColor(.white)
+                        .background(Color(.white))
+                        .foregroundColor(.black)
                         .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
                 }
                 .padding(.trailing, 40)
                 .padding(.bottom, 40)
