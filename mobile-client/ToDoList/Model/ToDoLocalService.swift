@@ -16,10 +16,14 @@ class ToDoLocalService: ToDoLocalServiceProtocol {
     }
 
     func fetchTodos() throws -> [ToDoItemData] {
-        let fetchDescriptor
-            = FetchDescriptor<ToDoItemData>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
+        let fetchDescriptor = FetchDescriptor<ToDoItemData>()
         let todos = try context.fetch(fetchDescriptor)
-        return todos
+        let sortedTodos = todos.sorted { first, second in
+            let firstDeadline = ToDoDateFormatter.isoDateFormatter.date(from: first.deadline ?? "") ?? Date.distantFuture
+            let secondDeadline = ToDoDateFormatter.isoDateFormatter.date(from: second.deadline ?? "") ?? Date.distantFuture
+            return firstDeadline < secondDeadline
+        }
+        return sortedTodos
     }
 
     func save(todo: ToDoItemData) throws {

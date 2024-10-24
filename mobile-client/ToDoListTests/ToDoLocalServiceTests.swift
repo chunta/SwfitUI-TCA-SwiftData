@@ -37,7 +37,7 @@ struct ToDoLocalServiceTests {
         let todo1 =
             ToDoItemData(id: 0,
                          title: "Prepare Presentation",
-                         deadline: nil,
+                         deadline: "2023-05-13T20:49:00.000Z",
                          status: "todo",
                          tags: [],
                          createdAt: "2023-12-01T12:22:30.356Z",
@@ -45,13 +45,22 @@ struct ToDoLocalServiceTests {
         let todo2 =
             ToDoItemData(id: 1,
                          title: "Visit Doctor",
-                         deadline: nil,
+                         deadline: "2023-05-13T20:49:00.000+08:00",
                          status: "todo",
                          tags: [Tag(name: "health")],
                          createdAt: "2023-12-02T12:22:30.356Z",
                          updatedAt: "2023-12-10T12:22:30.356Z")
         let todo3 =
             ToDoItemData(id: 2,
+                         title: "Finish Book",
+                         deadline: "2024-12-30T15:12:26.676Z",
+                         status: "todo",
+                         tags: [Tag(name: "reading")],
+                         createdAt: "2023-12-03T12:22:30.356Z",
+                         updatedAt: "2023-12-09T12:22:30.356Z")
+
+        let todo4 =
+            ToDoItemData(id: 3,
                          title: "Finish Book",
                          deadline: nil,
                          status: "todo",
@@ -62,13 +71,14 @@ struct ToDoLocalServiceTests {
         try! service.save(todo: todo1)
         try! service.save(todo: todo2)
         try! service.save(todo: todo3)
+        try! service.save(todo: todo4)
 
         let todos = try! service.fetchTodos()
-        #expect(todos.count == 3)
-
+        #expect(todos.count == 4)
         #expect(todos.first!.id == 1)
-        #expect(todos[1].id == 2)
-        #expect(todos[2].id == 0)
+        #expect(todos[1].id == 0)
+        #expect(todos[2].id == 2)
+        #expect(todos[3].id == 3)
     }
 
     @Test

@@ -114,7 +114,16 @@ struct ToDoListReducer {
                 return .none
 
             case let .addToDo(.presented(.saveResponse(.success(todo)))):
-                state.todos.insert(todo, at: 0)
+                // Find the correct position for the new todo based on its deadline
+                let index = state.todos.firstIndex { existingTodo in
+                    let existingDeadline = existingTodo.deadline.flatMap { ToDoDateFormatter.isoDateFormatter.date(from: $0) } ?? Date.distantFuture
+                    let newDeadline = todo.deadline.flatMap { ToDoDateFormatter.isoDateFormatter.date(from: $0) } ?? Date.distantFuture
+                    return newDeadline < existingDeadline
+                } ?? state.todos.endIndex
+
+                // Insert the new todo at the calculated position
+                state.todos.insert(todo, at: index)
+
                 state.addToDo = nil
                 return .none
 
