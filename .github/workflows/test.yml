@@ -20,9 +20,9 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_16.0.app  # Specify the Xcode version if needed
 
       - name: Build
-        working-directory: mobile-client
+        working-directory: ./mobile-client
         run: swift build -v
 
       - name: Run tests
-        working-directory: mobile-client
+        working-directory: ./mobile-client
         run: xcodebuild test -scheme ToDoList -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.0'
