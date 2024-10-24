@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3  # Checkout the repository code
+        uses: actions/checkout@v4  # Checkout the repository code
 
       - name: Set up Xcode
         run: sudo xcode-select -switch /Applications/Xcode_16.0.app  # Specify the Xcode version if needed
