@@ -126,6 +126,69 @@ struct ToDoReducerTests {
     }
 
     @Test
+    func testInsertingNewToDoItemPerformance() async {
+        let totalAdditionDay = 6000
+
+        var todos = (0 ..< totalAdditionDay).map { i in
+            ToDoItem(
+                id: i,
+                title: "Task \(i)",
+                deadline: randomDeadline(additionDay: totalAdditionDay),
+                status: "pending",
+                tags: [],
+                createdAt: "2024-10-25T00:00:00Z",
+                updatedAt: "2024-10-25T00:00:00Z"
+            )
+        }
+
+        todos.sort {
+            ($0.deadline.flatMap(ToDoDateFormatter.isoDateFormatter.date(from:)) ?? Date.distantFuture) <
+                ($1.deadline.flatMap(ToDoDateFormatter.isoDateFormatter.date(from:)) ?? Date.distantFuture)
+        }
+
+        let inBetweenDeadline = randomDeadlineInBetween(between: todos[4217].deadline!, and: todos[4218].deadline!)
+
+        let initialState = ToDoListReducer.State(todos: IdentifiedArrayOf(uniqueElements: todos))
+
+        let store = await TestStore(initialState: initialState) {
+            ToDoListReducer()
+        } withDependencies: {
+            $0.toDoService = MockToDoRemoteService()
+        }
+
+        let newTodo = ToDoItem(
+            id: totalAdditionDay,
+            title: "New Task",
+            deadline: inBetweenDeadline,
+            status: "pending",
+            tags: [],
+            createdAt: "2024-10-25T10:00:00Z",
+            updatedAt: "2024-10-25T10:00:00Z"
+        )
+
+        await store.send(.addButtonTapped) {
+            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+        }
+
+        let runStartTime = Date().millisecondsSince1970
+
+        await store.send(.addToDo(.presented(.saveResponse(.success(newTodo))))) {
+            $0.insertionIndex = 4218
+            $0.todos.insert(newTodo, at: $0.insertionIndex)
+            $0.addToDo = nil
+        }
+
+        // Record the end time of the insertion operation
+        let runEndTime = Date().millisecondsSince1970
+
+        let spentTime = runEndTime - runStartTime
+
+        print("Time spent on insertion: \(spentTime) milliseconds")
+
+        #expect(spentTime < 130)
+    }
+
+    @Test
     func testDeleteToDoSuccess() async {
         let todos = [
             ToDoItem(id: 1, title: "Task 1", status: "in-progress", tags: [], createdAt: "2024-10-10T08:30:00.117Z", updatedAt: "2024-10-20T10:15:00.117Z"),
@@ -180,5 +243,42 @@ struct ToDoReducerTests {
             $0.deletingTodoID = nil
             $0.alert = .init(title: { TextState("Failed to Delete Item!") })
         }
+    }
+}
+
+extension ToDoReducerTests {
+    func randomDeadline(additionDay: Int) -> String {
+        let calendar = Calendar.current
+        let currentDate = Date()
+
+        // Generate a random number of days within the specified range
+        let randomDays = Int.random(in: 0 ... additionDay)
+        let randomDate = calendar.date(byAdding: .day, value: randomDays, to: currentDate) ?? currentDate
+
+        // Format the date in ISO 8601 format
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFractionalSeconds, .withInternetDateTime]
+        return formatter.string(from: randomDate)
+    }
+
+    func randomDeadlineInBetween(between startString: String, and endString: String) -> String? {
+        guard
+            let startDate = ToDoDateFormatter.isoDateFormatter.date(from: startString),
+            let endDate = ToDoDateFormatter.isoDateFormatter.date(from: endString)
+        else {
+            return nil
+        }
+
+        let timeInterval = endDate.timeIntervalSince(startDate)
+        let randomTimeInterval = TimeInterval.random(in: 0 ... timeInterval)
+        let randomDate = startDate.addingTimeInterval(randomTimeInterval)
+
+        return ToDoDateFormatter.isoDateFormatter.string(from: randomDate)
+    }
+}
+
+extension Date {
+    var millisecondsSince1970: Int64 {
+        Int64((timeIntervalSince1970 * 1000.0).rounded())
     }
 }

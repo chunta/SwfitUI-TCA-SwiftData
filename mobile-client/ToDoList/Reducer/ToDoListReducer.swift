@@ -74,6 +74,25 @@ struct ToDoListReducer {
 
     @Dependency(\.toDoService) var toDoService
 
+    func binaryInsertionIndex(_ todos: inout IdentifiedArrayOf<ToDoItem>, newTodo: ToDoItem) -> Int {
+        var left = 0
+        var right = todos.count - 1
+        let newDeadline = newTodo.deadline.flatMap { ToDoDateFormatter.isoDateFormatter.date(from: $0) } ?? Date.distantFuture
+
+        while left <= right {
+            let mid = left + (right - left) / 2
+            let midDeadline = todos[mid].deadline.flatMap { ToDoDateFormatter.isoDateFormatter.date(from: $0) } ?? Date.distantFuture
+
+            if newDeadline < midDeadline {
+                right = mid - 1
+            } else {
+                left = mid + 1
+            }
+        }
+
+        return left
+    }
+
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
@@ -115,16 +134,10 @@ struct ToDoListReducer {
                 return .none
 
             case let .addToDo(.presented(.saveResponse(.success(todo)))):
-                // Find the correct position for the new todo based on its deadline
-                let index = state.todos.firstIndex { existingTodo in
-                    let existingDeadline = existingTodo.deadline.flatMap { ToDoDateFormatter.isoDateFormatter.date(from: $0) } ?? Date.distantFuture
-                    let newDeadline = todo.deadline.flatMap { ToDoDateFormatter.isoDateFormatter.date(from: $0) } ?? Date.distantFuture
-                    return newDeadline < existingDeadline
-                } ?? state.todos.endIndex
+                let index = binaryInsertionIndex(&state.todos, newTodo: todo)
 
                 state.insertionIndex = index
 
-                // Insert the new todo at the calculated position
                 state.todos.insert(todo, at: index)
 
                 state.addToDo = nil
