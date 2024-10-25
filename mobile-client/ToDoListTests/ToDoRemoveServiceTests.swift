@@ -161,9 +161,9 @@ struct ToDoRemoteServiceTests {
             Issue.record("Unexpected Error")
         } catch {
             // Handle the error thrown by the fetch method.
-            if let serviceError = error as? ToDoServiceError {
+            if let serviceError = error as? ToDoError {
                 // Expect the error to be of type ToDoServiceError and verify the status code.
-                #expect(serviceError == ToDoServiceError.invalidResponse(500))
+                #expect(serviceError == ToDoError.invalidResponse(500))
             } else {
                 // Record an unexpected error if the error type does not match.
                 Issue.record("Unexpected Error")
@@ -226,12 +226,6 @@ struct ToDoRemoteServiceTests {
                             createdAt: "2024-10-10T10:00:00.333Z",
                             updatedAt: "2024-10-15T10:00:00.333Z")
 
-        // Prepare the response to simulate a successful post.
-        let fetchResponse = AddToDoResponse(success: true, data: todo)
-
-        // Encode the response into JSON data.
-        let jsonData = try! JSONEncoder().encode(fetchResponse)
-
         // Define the URL for the post request.
         let url = URL(string: "http://localhost:5000/todos")!
 
@@ -239,7 +233,7 @@ struct ToDoRemoteServiceTests {
         let httpResponse = HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil)!
 
         // Set the result of the mock data fetcher to simulate a server error.
-        mockDataFetcher.result = (jsonData, httpResponse)
+        mockDataFetcher.result = (Data(), httpResponse)
 
         do {
             // Attempt to post the ToDo item.
@@ -247,8 +241,8 @@ struct ToDoRemoteServiceTests {
             Issue.record("Unexpected Error")
         } catch {
             // Verify that the error returned is of the expected type.
-            if let serviceError = error as? ToDoServiceError {
-                #expect(serviceError == ToDoServiceError.invalidResponse(500))
+            if let serviceError = error as? ToDoError {
+                #expect(serviceError == ToDoError.invalidResponse(500))
             } else {
                 Issue.record("Unexpected Error")
             }
@@ -286,6 +280,7 @@ struct ToDoRemoteServiceTests {
 
         // Verify the title of the posted ToDo matches the original.
         #expect(remoteToDo.title == todo.title)
+
         // Expect the local service's todos count to be 1 after the post.
         #expect(mockLocalService.todos.count == 1)
 
@@ -333,6 +328,7 @@ struct ToDoRemoteServiceTests {
 
         // Verify the title of the posted ToDo matches the original.
         #expect(remoteToDo.title == todo.title)
+
         // Expect the local service's todos count to be 1 after the post.
         #expect(mockLocalService.todos.count == 1)
 
@@ -346,8 +342,8 @@ struct ToDoRemoteServiceTests {
             Issue.record("Unexpected Error")
         } catch {
             // Verify that the error returned is of the expected type.
-            if let serviceError = error as? ToDoServiceError {
-                #expect(serviceError == ToDoServiceError.invalidResponse(500))
+            if let serviceError = error as? ToDoError {
+                #expect(serviceError == ToDoError.invalidResponse(500))
             } else {
                 Issue.record("Unexpected Error")
             }

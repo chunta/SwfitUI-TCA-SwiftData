@@ -1,43 +1,5 @@
 import ComposableArchitecture
 import Foundation
-import UIKit
-
-enum ToDoError: Error, LocalizedError, Equatable {
-    case networkError(Error)
-    case decodingError(Error)
-    case invalidResponse(Int)
-    case localError
-
-    var errorDescription: String? {
-        switch self {
-        case let .networkError(error):
-            "Network error: \(error.localizedDescription)"
-        case let .decodingError(error):
-            "Decoding error: \(error.localizedDescription)"
-        case let .invalidResponse(statusCode):
-            "Invalid response from server: \(statusCode)"
-        case .localError:
-            "Unknow local error while fetching local storage data"
-        }
-    }
-
-    static func == (lhs: ToDoError, rhs: ToDoError) -> Bool {
-        switch (lhs, rhs) {
-        case let (.networkError(error1), .networkError(error2)):
-            (error1 as NSError).code == (error2 as NSError).code &&
-                (error1.localizedDescription == error2.localizedDescription)
-        case let (.decodingError(error1), .decodingError(error2)):
-            (error1 as NSError).code == (error2 as NSError).code &&
-                (error1.localizedDescription == error2.localizedDescription)
-        case let (.invalidResponse(statusCode1), .invalidResponse(statusCode2)):
-            statusCode1 == statusCode2
-        case (.localError, .localError):
-            true
-        default:
-            false
-        }
-    }
-}
 
 @Reducer
 struct ToDoListReducer {

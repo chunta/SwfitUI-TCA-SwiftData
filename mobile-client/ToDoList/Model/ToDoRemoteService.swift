@@ -10,36 +10,6 @@ protocol ToDoRemoteServiceProtocol {
     func deleteToDo(id: Int) async throws
 }
 
-enum ToDoServiceError: Error, LocalizedError, Equatable {
-    case networkError(Error)
-    case decodingError(Error)
-    case invalidResponse(Int)
-
-    var errorDescription: String? {
-        switch self {
-        case let .networkError(error):
-            "Network error: \(error.localizedDescription)"
-        case let .decodingError(error):
-            "Decoding error: \(error.localizedDescription)"
-        case let .invalidResponse(statusCode):
-            "Invalid response from server: \(statusCode)"
-        }
-    }
-
-    static func == (lhs: ToDoServiceError, rhs: ToDoServiceError) -> Bool {
-        switch (lhs, rhs) {
-        case let (.networkError(lhsError), .networkError(rhsError)):
-            lhsError.localizedDescription == rhsError.localizedDescription
-        case let (.decodingError(lhsError), .decodingError(rhsError)):
-            lhsError.localizedDescription == rhsError.localizedDescription
-        case let (.invalidResponse(lhsStatusCode), .invalidResponse(rhsStatusCode)):
-            lhsStatusCode == rhsStatusCode
-        default:
-            false
-        }
-    }
-}
-
 final class ToDoRemoteService: ToDoRemoteServiceProtocol {
     private let endPoint = "http://localhost:5000/todos"
     private let localService: ToDoLocalServiceProtocol
@@ -50,13 +20,19 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
         self.dataFetcher = dataFetcher
     }
 
+    /// Handles errors and converts them into ToDoError types.
     private func handleError(_ error: Error) throws -> Never {
-        if let urlError = error as? URLError {
-            throw ToDoServiceError.networkError(urlError)
-        } else if let decodingError = error as? DecodingError {
-            throw ToDoServiceError.decodingError(decodingError)
-        } else {
-            throw error
+        if let toDoError = error as? ToDoError {
+            throw toDoError
+        }
+
+        switch error {
+        case let urlError as URLError:
+            throw ToDoError.networkError(urlError)
+        case let decodingError as DecodingError:
+            throw ToDoError.decodingError(decodingError)
+        default:
+            throw ToDoError.unknownError
         }
     }
 
@@ -66,10 +42,10 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
             let (data, response)
                 = try await dataFetcher.dataRequest(from: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                throw ToDoServiceError.invalidResponse(0)
+                throw ToDoError.invalidResponse(0)
             }
             guard (200 ... 299).contains(httpResponse.statusCode) else {
-                throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
+                throw ToDoError.invalidResponse(httpResponse.statusCode)
             }
             let decodedResponse = try JSONDecoder().decode(FetchToDoResponse.self, from: data)
             var remoteTodos = decodedResponse.data
@@ -116,11 +92,11 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
             let request = RequestBuilder.build(url: URL(string: endPoint)!, method: "POST", headers: ["Content-Type": "application/json"], body: encodedData)
             let (data, response) = try await dataFetcher.dataRequest(from: request)
             guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
-                throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
+                throw ToDoError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
             }
             let decodedResponse = try JSONDecoder().decode(AddToDoResponse.self, from: data)
             guard decodedResponse.success else {
-                throw ToDoServiceError.invalidResponse(httpResponse.statusCode)
+                throw ToDoError.invalidResponse(httpResponse.statusCode)
             }
 
             // Save the new ToDo item in local storage
@@ -139,7 +115,7 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
             let request = RequestBuilder.build(url: URL(string: deleteURL)!, method: "DELETE", headers: nil, body: nil)
             let (_, response) = try await dataFetcher.dataRequest(from: request)
             guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
-                throw ToDoServiceError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
+                throw ToDoError.invalidResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
             }
 
             // Delete the local ToDo item

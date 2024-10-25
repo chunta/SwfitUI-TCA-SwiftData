@@ -36,7 +36,7 @@ struct AddToDoReducer {
                         let newTodo = try await toDoService.postToDo(state.todo)
                         await send(.saveResponse(.success(newTodo)))
                     } catch {
-                        await send(.saveResponse(.failure(.networkError(error))))
+                        await send(.saveResponse(.failure(error as? ToDoError ?? .unknownError)))
                     }
                 }
 
