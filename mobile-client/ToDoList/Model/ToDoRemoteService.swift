@@ -62,7 +62,6 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
 
     func fetchToDos() async throws -> [ToDoItem] {
         do {
-            try await Task.sleep(nanoseconds: 2_000_000_000)
             let request = RequestBuilder.build(url: URL(string: endPoint)!, method: "GET", headers: nil, body: nil)
             let (data, response)
                 = try await dataFetcher.dataRequest(from: request)
@@ -117,7 +116,6 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
 
     func postToDo(_ todo: ToDoItem) async throws -> ToDoItem {
         do {
-            try await Task.sleep(nanoseconds: 2_000_000_000)
             let encodedData = try JSONEncoder().encode(todo)
             let request = RequestBuilder.build(url: URL(string: endPoint)!, method: "POST", headers: ["Content-Type": "application/json"], body: encodedData)
             let (data, response) = try await dataFetcher.dataRequest(from: request)
@@ -141,7 +139,6 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
 
     func deleteToDo(id: Int) async throws {
         do {
-            try await Task.sleep(nanoseconds: 2_000_000_000)
             let deleteURL = "\(endPoint)/\(id)"
             let request = RequestBuilder.build(url: URL(string: deleteURL)!, method: "DELETE", headers: nil, body: nil)
             let (_, response) = try await dataFetcher.dataRequest(from: request)
