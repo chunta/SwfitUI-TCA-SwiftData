@@ -75,11 +75,7 @@ final class ToDoRemoteService: ToDoRemoteServiceProtocol {
             var remoteTodos = decodedResponse.data
 
             // Sort remote todos by deadline (nil values will be placed at the end)
-            remoteTodos.sort { first, second in
-                let firstDeadline = ToDoDateFormatter.isoDateFormatter.date(from: first.deadline ?? "") ?? Date.distantFuture
-                let secondDeadline = ToDoDateFormatter.isoDateFormatter.date(from: second.deadline ?? "") ?? Date.distantFuture
-                return firstDeadline < secondDeadline
-            }
+            remoteTodos.sortedByDeadline()
 
             // Sync local data with remote data:
             // 1. For each remote ToDo, update the matching local item if IDs match, replacing its properties.

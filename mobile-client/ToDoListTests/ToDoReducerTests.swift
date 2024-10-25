@@ -137,7 +137,7 @@ struct ToDoReducerTests {
 
     /// Tests the performance of inserting a new ToDo item into the list.
     @Test
-    func testInsertingNewToDoItemPerformance() async {
+    func testNewToDoItemInsertionPerformance() async {
         let totalAdditionDay = 6000
 
         // Generate a list of ToDo items to be added.
@@ -154,10 +154,8 @@ struct ToDoReducerTests {
         }
 
         // Sort ToDo items by their deadline.
-        todos.sort {
-            ($0.deadline.flatMap(ToDoDateFormatter.isoDateFormatter.date(from:)) ?? Date.distantFuture) <
-                ($1.deadline.flatMap(ToDoDateFormatter.isoDateFormatter.date(from:)) ?? Date.distantFuture)
-        }
+        todos.sortedByDeadline()
+
         // Select a random deadline for the new ToDo item to be inserted between two existing items.
         let inBetweenDeadline = randomDeadlineInBetween(between: todos[4217].deadline!, and: todos[4218].deadline!)
 
