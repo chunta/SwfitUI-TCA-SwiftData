@@ -39,14 +39,15 @@ struct AddToDoReducerTests {
         }
     }
 
-    /// Tests the failure case when saving a new ToDo item.
+    /// Tests the failure case when saving a new ToDo item due to a network error.
     @Test
-    func testSaveToDoFailure() async {
-        // Arrange: Set up a mock remote service that simulates an error.
+    func testSaveToDoFailure_withNetworkError() async {
+        // Arrange: Set up a mock remote service that simulates a network error.
         let mockService = MockToDoRemoteService()
-        mockService.error = NSError(domain: "Fail", code: 0)
+        let expectedError = ToDoError.networkError(NSError(domain: "Fail", code: 0))
+        mockService.error = expectedError
 
-        // Create a test store with an initial state and dependencies.
+        // Create a test store with the initial state and dependencies.
         let store = await TestStore(initialState: AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))) {
             AddToDoReducer()
         } withDependencies: {
@@ -67,7 +68,7 @@ struct AddToDoReducerTests {
         }
 
         // Assert: Receive the failure response and check the state for the error message.
-        await store.receive(.saveResponse(.failure(.networkError(mockService.error!)))) {
+        await store.receive(.saveResponse(.failure(expectedError))) {
             $0.isSaving = false
             $0.saveError = "Network error: The operation couldn’t be completed. (Fail error 0.)"
         }
