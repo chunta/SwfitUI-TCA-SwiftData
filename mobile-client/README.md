@@ -1,5 +1,12 @@
 # ToDoList Application
 
+## Screenshot
+./mobile-client/screenshot00.png
+./mobile-client/screenshot01.png
+
+## Video reel
+https://www.youtube.com/watch?v=_JOpPdaEeb4 (only open to people who know this link)
+
 ## Overview
 The ToDoList application is a task management tool built using the Composable Architecture in Swift. This README provides an overview of the main components and their responsibilities within the application.
 
