@@ -4,9 +4,9 @@ import SwiftUI
 @main
 struct ToDoListApp: App {
     static let todoListStore = Store(
-        initialState: ToDoListReducer.State())
+        initialState: ToDoListFeature.State())
     {
-        ToDoListReducer()
+        ToDoListFeature()
     }
 
     var body: some Scene {

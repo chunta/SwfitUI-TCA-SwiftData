@@ -20,7 +20,7 @@ struct AddToDoView: View {
     private let maxTags = 3
     private let maxCharactersPerTag = 8
 
-    @Bindable var store: StoreOf<AddToDoReducer>
+    @Bindable var store: StoreOf<AddToDoFeature>
     @State private var showDatePicker = false
     @State private var selectedDate = Date()
     @State private var tags: [String] = []
@@ -103,7 +103,7 @@ struct ToDoTitleField: View {
 }
 
 struct DeadlineField: View {
-    @Bindable var store: StoreOf<AddToDoReducer>
+    @Bindable var store: StoreOf<AddToDoFeature>
     @Binding var showDatePicker: Bool
 
     var body: some View {
@@ -146,7 +146,7 @@ struct AutoResizingTextFieldModifier: ViewModifier {
 }
 
 struct DatePickerComponent: View {
-    @Bindable var store: StoreOf<AddToDoReducer>
+    @Bindable var store: StoreOf<AddToDoFeature>
     @Binding var selectedDate: Date
 
     private let dateFormatter: DateFormatter = {
@@ -223,7 +223,7 @@ struct StatusPicker: View {
 
 struct TagInputField: View {
     @Binding var tags: [String]
-    @Bindable var store: StoreOf<AddToDoReducer>
+    @Bindable var store: StoreOf<AddToDoFeature>
     @State private var input: String = ""
 
     let maxTags: Int
@@ -313,7 +313,7 @@ struct TagItem: View {
 }
 
 struct ActionButtons: View {
-    @Bindable var store: StoreOf<AddToDoReducer>
+    @Bindable var store: StoreOf<AddToDoFeature>
 
     private var isTitleValid: Bool {
         let title = store.todo.title
@@ -357,12 +357,12 @@ struct ActionButtons: View {
     NavigationStack {
         AddToDoView(
             store: Store(
-                initialState: AddToDoReducer.State(
+                initialState: AddToDoFeature.State(
                     todo:
                     ToDoItem(id: 0, title: "", deadline: "", status: "", tags: [""], createdAt: "", updatedAt: "")
                 )
             ) {
-                AddToDoReducer()
+                AddToDoFeature()
             }
         )
     }

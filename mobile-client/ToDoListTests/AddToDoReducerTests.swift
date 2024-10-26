@@ -14,8 +14,8 @@ struct AddToDoReducerTests {
         let mockService = MockToDoRemoteService()
 
         // Create a test store with an initial state and dependencies.
-        let store = await TestStore(initialState: AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))) {
-            AddToDoReducer()
+        let store = await TestStore(initialState: AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))) {
+            AddToDoFeature()
         } withDependencies: {
             $0.toDoService = mockService
         }
@@ -48,8 +48,8 @@ struct AddToDoReducerTests {
         mockService.error = expectedError
 
         // Create a test store with the initial state and dependencies.
-        let store = await TestStore(initialState: AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))) {
-            AddToDoReducer()
+        let store = await TestStore(initialState: AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))) {
+            AddToDoFeature()
         } withDependencies: {
             $0.toDoService = mockService
         }

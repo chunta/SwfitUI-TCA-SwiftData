@@ -1,31 +1,51 @@
 import ComposableArchitecture
 import Foundation
 
+/// The feature responsible for managing the ToDo list state and actions.
 @Reducer
-struct ToDoListReducer {
+struct ToDoListFeature {
     @ObservableState
     struct State: Equatable {
-        @Presents var addToDo: AddToDoReducer.State?
+        /// Presents the AddToDo feature's state if active.
+        @Presents var addToDo: AddToDoFeature.State?
+        /// The list of ToDo items.
         var todos: IdentifiedArrayOf<ToDoItem> = []
+        /// Indicates whether the ToDo items are currently being loaded.
         var isLoading: Bool = false
+        /// Holds an error message if fetching ToDo items fails.
         var error: String?
+        /// Indicates whether a ToDo item is currently being deleted.
         var isDeleting: Bool = false
+        /// Holds the ID of the ToDo item currently being deleted.
         var deletingTodoID: Int?
+        /// Indicates whether the list is in edit mode.
         var isEditing: Bool = false
+        /// Holds the ID of the ToDo item being edited.
         var editingTodoId: Int?
+        /// Index for insertion of new ToDo items.
         var insertionIndex: Int = 0
+        /// Presents an alert based on specific actions.
         @Presents var alert: AlertState<Action.Alert>?
     }
 
     enum Action: Equatable {
+        /// Toggles the edit mode for the ToDo list.
         case toggleEditMode
+        /// Indicates that the add button was tapped.
         case addButtonTapped
-        case addToDo(PresentationAction<AddToDoReducer.Action>)
+        /// Handles actions from the AddToDo feature.
+        case addToDo(PresentationAction<AddToDoFeature.Action>)
+        /// Fetches the ToDo items from the service.
         case fetchToDos
+        /// Handles the response from the fetchToDos action.
         case fetchToDosResponse(Result<[ToDoItem], ToDoError>)
+        /// Deletes a ToDo item by ID.
         case deleteToDoItem(Int)
+        /// Handles the response from the deleteToDoItem action.
         case deleteToDoResponse(Result<Int, ToDoError>)
+        /// Handles alert actions.
         case alert(PresentationAction<Alert>)
+
         @CasePathable
         enum Alert {
             case useLocalData
@@ -36,6 +56,7 @@ struct ToDoListReducer {
 
     @Dependency(\.toDoService) var toDoService
 
+    /// Finds the index to insert a new ToDo item in sorted order based on its deadline.
     func binaryInsertionIndex(_ todos: inout IdentifiedArrayOf<ToDoItem>, newTodo: ToDoItem) -> Int {
         var left = 0
         var right = todos.count - 1
@@ -88,7 +109,7 @@ struct ToDoListReducer {
                 return .none
 
             case .addButtonTapped:
-                state.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+                state.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
                 return .none
 
             case .addToDo(.presented(.cancelButtonTapped)):
@@ -97,11 +118,8 @@ struct ToDoListReducer {
 
             case let .addToDo(.presented(.saveResponse(.success(todo)))):
                 let index = binaryInsertionIndex(&state.todos, newTodo: todo)
-
                 state.insertionIndex = index
-
                 state.todos.insert(todo, at: index)
-
                 state.addToDo = nil
                 return .none
 
@@ -187,7 +205,7 @@ struct ToDoListReducer {
             }
         }
         .ifLet(\.$addToDo, action: \.addToDo) {
-            AddToDoReducer()
+            AddToDoFeature()
         }
     }
 }

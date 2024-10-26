@@ -1,7 +1,10 @@
 import Foundation
 
-// Extensions for ToDoItemData
+// Extensions for sorting ToDoItemData array by deadline.
 extension [ToDoItemData] {
+    /// Sorts the `ToDoItemData` array by the `deadline` property, placing items
+    /// with the earliest deadlines at the beginning of the array. Items without
+    /// a specified deadline are considered to have a deadline of `Date.distantFuture`.
     mutating func sortedByDeadline() {
         sort { first, second in
             let firstDeadline = ToDoDateFormatter.isoDateFormatter.date(from: first.deadline ?? "") ?? Date.distantFuture
@@ -11,8 +14,11 @@ extension [ToDoItemData] {
     }
 }
 
-// Extensions for ToDoItem
+// Extensions for sorting ToDoItem array by deadline.
 extension [ToDoItem] {
+    /// Sorts the `ToDoItem` array by the `deadline` property, placing items
+    /// with the earliest deadlines at the beginning of the array. Items without
+    /// a specified deadline are considered to have a deadline of `Date.distantFuture`.
     mutating func sortedByDeadline() {
         sort { first, second in
             let firstDeadline = ToDoDateFormatter.isoDateFormatter.date(from: first.deadline ?? "") ?? Date.distantFuture

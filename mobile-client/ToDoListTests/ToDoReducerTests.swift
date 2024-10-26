@@ -16,8 +16,8 @@ struct ToDoReducerTests {
         let mockService = MockToDoRemoteService()
         mockService.todos = todos
 
-        let store = await TestStore(initialState: ToDoListReducer.State()) {
-            ToDoListReducer()
+        let store = await TestStore(initialState: ToDoListFeature.State()) {
+            ToDoListFeature()
         } withDependencies: {
             $0.toDoService = mockService
         }
@@ -40,8 +40,8 @@ struct ToDoReducerTests {
         let mockService = MockToDoRemoteService()
         mockService.error = NSError(domain: "Fail", code: 0)
 
-        let store = await TestStore(initialState: ToDoListReducer.State()) {
-            ToDoListReducer()
+        let store = await TestStore(initialState: ToDoListFeature.State()) {
+            ToDoListFeature()
         } withDependencies: {
             $0.toDoService = mockService
         }
@@ -79,15 +79,15 @@ struct ToDoReducerTests {
         let mockService = MockToDoRemoteService()
         mockService.todos = []
 
-        let store = await TestStore(initialState: ToDoListReducer.State()) {
-            ToDoListReducer()
+        let store = await TestStore(initialState: ToDoListFeature.State()) {
+            ToDoListFeature()
         } withDependencies: {
             $0.toDoService = mockService
         }
 
         // Trigger the add button action and initialize the addToDo state.
         await store.send(.addButtonTapped) {
-            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+            $0.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
         }
 
         // Prepare the first ToDo item and send the save response.
@@ -101,7 +101,7 @@ struct ToDoReducerTests {
         // Prepare and add the second ToDo item.
         let todo2 = ToDoItem(id: 2, title: "Task 2", deadline: "2024-10-05T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-10-01T10:00:00.807Z", updatedAt: "2024-10-01T10:00:00.807Z")
         await store.send(.addButtonTapped) {
-            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+            $0.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
         }
 
         await store.send(.addToDo(.presented(.saveResponse(.success(todo2))))) {
@@ -113,7 +113,7 @@ struct ToDoReducerTests {
         // Prepare and add the third ToDo item.
         let todo3 = ToDoItem(id: 3, title: "Task 3", deadline: "2021-10-10T10:00:00.807Z", status: "pending", tags: [], createdAt: "2024-10-01T11:00:00.807Z", updatedAt: "2024-10-01T11:00:00.807Z")
         await store.send(.addButtonTapped) {
-            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+            $0.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
         }
 
         await store.send(.addToDo(.presented(.saveResponse(.success(todo3))))) {
@@ -125,7 +125,7 @@ struct ToDoReducerTests {
         // Prepare and add the fourth ToDo item.
         let todo4 = ToDoItem(id: 4, title: "Task 4", deadline: nil, status: "pending", tags: [], createdAt: "2024-10-01T11:00:00.807Z", updatedAt: "2024-10-01T11:00:00.807Z")
         await store.send(.addButtonTapped) {
-            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+            $0.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
         }
 
         await store.send(.addToDo(.presented(.saveResponse(.success(todo4))))) {
@@ -159,10 +159,10 @@ struct ToDoReducerTests {
         // Select a random deadline for the new ToDo item to be inserted between two existing items.
         let inBetweenDeadline = randomDeadlineInBetween(between: todos[4217].deadline!, and: todos[4218].deadline!)
 
-        let initialState = ToDoListReducer.State(todos: IdentifiedArrayOf(uniqueElements: todos))
+        let initialState = ToDoListFeature.State(todos: IdentifiedArrayOf(uniqueElements: todos))
 
         let store = await TestStore(initialState: initialState) {
-            ToDoListReducer()
+            ToDoListFeature()
         } withDependencies: {
             $0.toDoService = MockToDoRemoteService()
         }
@@ -179,7 +179,7 @@ struct ToDoReducerTests {
         )
 
         await store.send(.addButtonTapped) {
-            $0.addToDo = AddToDoReducer.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
+            $0.addToDo = AddToDoFeature.State(todo: ToDoItem(id: 0, title: "", deadline: nil, status: "", tags: [], createdAt: "", updatedAt: ""))
         }
 
         // Record the start time of the insertion operation
@@ -213,8 +213,8 @@ struct ToDoReducerTests {
         let mockService = MockToDoRemoteService()
         mockService.todos = todos
 
-        let store = await TestStore(initialState: ToDoListReducer.State(todos: IdentifiedArrayOf(uniqueElements: todos))) {
-            ToDoListReducer()
+        let store = await TestStore(initialState: ToDoListFeature.State(todos: IdentifiedArrayOf(uniqueElements: todos))) {
+            ToDoListFeature()
         } withDependencies: {
             $0.toDoService = mockService
         }
@@ -243,8 +243,8 @@ struct ToDoReducerTests {
         mockService.todos = todos
         mockService.error = NSError(domain: "Fail", code: 0)
 
-        let store = await TestStore(initialState: ToDoListReducer.State(todos: IdentifiedArrayOf(uniqueElements: todos))) {
-            ToDoListReducer()
+        let store = await TestStore(initialState: ToDoListFeature.State(todos: IdentifiedArrayOf(uniqueElements: todos))) {
+            ToDoListFeature()
         } withDependencies: {
             $0.toDoService = mockService
         }
