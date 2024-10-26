@@ -12,9 +12,15 @@ The ToDoList application is a task management tool built using the Composable Ar
 ## Architecture Overview
 
 The application follows a layered architecture consisting of:
-- **User Interface Layer**: Contains views for displaying and adding to-do items.
-- **Feature Layer**: Manages state and logic for adding and listing to-do items.
-- **Model Layer**: Handles local and remote data operations.
+- **User Interface Layer**: 
+  Contains views for displaying and adding to-do items.
+- **Feature Layer**: 
+  Manages state and logic for adding and listing to-do items.
+- **Repository / Model Layer**: 
+  ToDoLocalService and ToDoRemoteService handle local and remote data operations.
+  These services act as repositories by abstracting data access logic, providing a clean API to the Feature Layer.
+  This separation of data retrieval and storage from higher-level application logic enables centralized control over data access, 
+  enhancing modularity and testability.
 
 ## Testing Strategy
 
