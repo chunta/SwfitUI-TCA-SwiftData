@@ -3,6 +3,35 @@
 ## Overview
 The ToDoList application is a task management tool built using the Composable Architecture in Swift. This README provides an overview of the main components and their responsibilities within the application.
 
+## Design Patterns
+
+- **The Composable Architecture (TCA)**: Utilizes TCA to manage state and actions predictably, enhancing modularity and testability.
+- **Dependency Injection**: Services are injected into features for improved decoupling and easier testing.
+- **Protocol-Oriented Programming**: Protocols define service contracts, enhancing flexibility and testability.
+
+## Architecture Overview
+
+The application follows a layered architecture consisting of:
+- **User Interface Layer**: Contains views for displaying and adding to-do items.
+- **Feature Layer**: Manages state and logic for adding and listing to-do items.
+- **Model Layer**: Handles local and remote data operations.
+
+## Testing Strategy
+
+Unit tests are implemented for features and services, utilizing mocks and stubs for isolated testing.
+
+## Code Structure and Best Practices
+
+The codebase is organized by features, following consistent naming conventions and coding standards.
+
+## Future Improvements
+
+Potential enhancements include refactoring for better modularity and integrating additional design patterns.
+
+## Commit History
+
+A clear and organized commit history will be maintained to facilitate easy review of changes.
+
 ## Main Classes Descriptions
 
 ### `AddToDoFeature`
