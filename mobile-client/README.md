@@ -15,7 +15,8 @@ The AddToDoFeature is responsible for managing the state and actions related to 
 ### `ToDoListFeature`
 Manages the state and actions related to displaying and managing the list of to-do items. Key functionalities include:
 - Fetching the list of to-do items.
-- Handling the addition and deletion of existing to-do items.
+- Handling the addition and deletion of existing to-do items, always prioritizing remote to-do items. 
+  Local items are deleted if their IDs are not found in the remote to-do items.
 - Ensure that the new todo item is inserted in the correct position using binary search.
 - Managing alerts for error handling and confirmations.
 
@@ -29,14 +30,14 @@ Responsible for managing local storage (SwiftData) operations related to to-do i
 - Saving new or updated to-do items.
 - Deleting specified to-do items.
 
-### `ToDoRemoteResponse`
-Defines the response structure received from the remote service. It encapsulates the details returned from API calls related to to-do items.
-
 ### `ToDoRemoteService`
 Handles remote service operations for to-do items. It includes methods for:
 - Fetching to-do items from a remote server and sorting them by deadline.
 - Posting new to-do items to the server.
 - Deleting existing to-do items on the server.
+
+### `ToDoRemoteResponse`
+Defines the response structure received from the remote service. It encapsulates the details returned from API calls related to to-do items.
 
 ### `ToDoListView`
 Most of the design is based on the provided screenshots, with a few differences:
