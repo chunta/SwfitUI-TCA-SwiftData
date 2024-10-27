@@ -1,9 +1,9 @@
 E # ToDoList Application
 
 ## Screenshot
-![ScreenShot00](./mobile-client/screenshot00.png)
-![ScreenShot00](./mobile-client/screenshot01.png)
-![Application Architecture Diagram](./mobile-client/architect_flow.png)
+![ScreenShot00](./screenshot00.png)
+![ScreenShot00](./screenshot01.png)
+![Application Architecture Diagram](./architect_flow.png)
 
 ## Video reel
 https://www.youtube.com/watch?v=_JOpPdaEeb4 (only open to people who know this link)
