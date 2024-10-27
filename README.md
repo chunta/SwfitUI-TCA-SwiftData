@@ -1,40 +1,97 @@
-# KWS iOS Team Coding Test
-Thank you for your time to work on this coding test.
+E # ToDoList Application
 
-## What to do
-- Implement the iOS native application described below
-- Make the application runnable locally
-- Use SwiftUI and TCA, and SwiftData
-- Use the provided API server to fetch data
-- Add the testing code to meet the requirements
+| ToDoListView                          | AddToDoView                           |
+|---------------------------------------|---------------------------------------|
+| ![ScreenShot00](./mobile-client/screenshot00.png)   | ![ScreenShot01](./mobile-client/screenshot01.png)   |
 
-- **Be sure to write code that sufficiently demonstrates design patterns and architecture. You are expected to utilize your senior-level knowledge of software development to the best of your ability.**
-- **The code you write needs to be well explained.**
-- **When creating your UI, the screenshots provided are just a reference. You are encouraged to follow the HIG, point out any issues with the UI in the screenshots, and choose a suitable design.**
+![Application Architecture Diagram](./mobile-client/architect_flow.png)
 
-<img src="./images/1.png" alt="index_page" width="300"/>
+## Video reel
+https://www.youtube.com/watch?v=_JOpPdaEeb4 (only open to people who know this link)
 
-- Display all ToDo items on the page fetched by GET /todos API.
-- Display each item's title, status, deadline, and tags, like the above image.
-- Display the delete button for each item that allows users to delete the item.
-- Display the item counts like in the above image.
-- Display the button to add a new ToDo item as a floating action button.  
+## Overview
+The ToDoList application is a task management tool built using the Composable Architecture in Swift. This README provides an overview of the main components and their responsibilities within the application.
 
-Please display the Bottom sheet to add a new ToDo.  
+## Design Patterns
 
-<img src="./images/2.png" alt="add_page" width="300"/>
+- **The Composable Architecture (TCA)**: Utilizes TCA to manage state and actions predictably, enhancing modularity and testability.
+- **Dependency Injection**: Services are injected into features for improved decoupling and easier testing.
+- **Protocol-Oriented Programming**: Protocols define service contracts, enhancing flexibility and testability.
 
-- Call POST /todos API with the form values when clicking on the Add Todo button.
-- Display a new ToDo item after receiving the POST /todos API response.
-- Please use system icons of iOS. You can choose proper one on your own.
-- These images are for reference purposes only. Please be sure to utilize your knowledge of the Human Interface Guidelines to design and implement the user interaction.
-- Additionally, please provide a rationale and explanation for your design in comments within your code.
+## Architecture Overview
 
+The application follows a layered architecture consisting of:
+- **User Interface Layer**: 
+  Contains views for displaying and adding to-do items.
+- **Feature Layer**: 
+  Manages state and logic for adding and listing to-do items.
+- **Repository / Model Layer**: 
+  ToDoLocalService and ToDoRemoteService handle local and remote data operations.
+  These services act as repositories by abstracting data access logic, providing a clean API to the Feature Layer.
+  This separation of data retrieval and storage from higher-level application logic enables centralized control over data access, 
+  enhancing modularity and testability.
 
+## Testing Strategy
 
-If you have something else you'd like to see developed, feel free to add it!
-(But please explain the details.)
+Unit tests are implemented for features and services, utilizing mocks and stubs for isolated testing.
 
-## How to submit your implementation
-- Create a pull request to the provided repository
-- After creating the pull request, please let us know by email.
+## Code Structure and Best Practices
+
+The codebase is organized by features, following consistent naming conventions and coding standards.
+
+## Future Improvements
+
+Potential enhancements include refactoring for better modularity and integrating additional design patterns.
+
+## Commit History
+
+A clear and organized commit history will be maintained to facilitate easy review of changes.
+
+## Main Classes Descriptions
+
+### `AddToDoFeature`
+The AddToDoFeature is responsible for managing the state and actions related to adding new to-do items within the application.
+- Saving Logic: When the user initiates the save operation, the feature asynchronously updates the isSaving state and handles success or 
+  failure responses from the service that posts the new to-do item.
+- Error Handling: If saving fails, it updates the saveError property with an appropriate error message, which can be displayed to the user.
+- State Management: The feature maintains a structured state that reflects the current status of the to-do item being created, ensuring a seamless and responsive user experience.
+
+### `ToDoListFeature`
+Manages the state and actions related to displaying and managing the list of to-do items. Key functionalities include:
+- Fetching the list of to-do items.
+- Handling the addition and deletion of existing to-do items, always prioritizing remote to-do items. 
+  Local items are deleted if their IDs are not found in the remote to-do items.
+- Ensure that the new todo item is inserted in the correct position using binary search.
+- Managing alerts for error handling and confirmations.
+
+### `DataFetcher`
+Defines the protocol for making network requests. It abstracts the process of fetching data, allowing for easier testing and mocking. Key responsibilities include:
+- Executing data requests and returning responses or errors.
+
+### `ToDoLocalService`
+Responsible for managing local storage (SwiftData) operations related to to-do items. It includes methods for:
+- Fetching all to-do items from local storage and sorting them by deadline.
+- Saving new or updated to-do items.
+- Deleting specified to-do items.
+
+### `ToDoRemoteService`
+Handles remote service operations for to-do items. It includes methods for:
+- Fetching to-do items from a remote server and sorting them by deadline.
+- Posting new to-do items to the server.
+- Deleting existing to-do items on the server.
+
+### `ToDoRemoteResponse`
+Defines the response structure received from the remote service. It encapsulates the details returned from API calls related to to-do items.
+
+### `ToDoListView`
+Most of the design is based on the provided screenshots, with a few differences:
+- The trash icon is not displayed directly to avoid accidental clicks; instead, 
+  it appears when the user taps a button in the top right corner.
+- The text displaying the total number of to-do items could not be placed exactly as per the design; I positioned it above the large title.
+
+### `AddToDoView`
+Designed according to the provided mockup, with the following differences:
+- The Post API cannot be submitted when the title is empty.
+- The title is limited to 32 characters.
+- The length of each tag is limited to 8 characters, and the total number of tags cannot exceed 3.
+- There is an input field for tags along with a preview view for the tags.
